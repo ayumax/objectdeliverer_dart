@@ -11,6 +11,7 @@ environment:
 
 dependencies:
   rxdart: 0.24.1
+  async: 2.4.2
 
   flutter:
     sdk: flutter 

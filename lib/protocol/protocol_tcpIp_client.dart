@@ -1,7 +1,8 @@
 // Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
- import 'protocol_ip_Socket.dart';
+ import 'objectdeliverer_protocol.dart';
+import 'protocol_ip_Socket.dart';
 
 class ProtocolTcpIpClient extends ProtocolIPSocket
     {
@@ -13,31 +14,35 @@ class ProtocolTcpIpClient extends ProtocolIPSocket
 
         bool autoConnectAfterDisconnect = false;
 
-        override async ValueTask StartAsync()
+        @override
+        Future<void> startAsync() async
         {
-            await base.StartAsync();
+            await super.startAsync();
 
-            this.StartConnect();
+            startConnect();
         }
 
-        override async ValueTask CloseAsync()
+        @override 
+        Future<void> closeAsync() async
         {
-            await base.CloseAsync();
+            await super.closeAsync();
 
-            await this.connectTask;
+            await _connectTask;
         }
 
-        protected override void DispatchDisconnected(ObjectDelivererProtocol delivererProtocol)
+        @override 
+        void dispatchDisconnected(ObjectDelivererProtocol delivererProtocol)
         {
-            base.DispatchDisconnected(delivererProtocol);
+            super.dispatchDisconnected(delivererProtocol);
 
-            if (this.AutoConnectAfterDisconnect)
+            if (autoConnectAfterDisconnect)
             {
-                this.StartConnect();
+                _startConnect();
             }
         }
 
-        protected override async Task ReceivedDatas()
+        @override
+        Future<void> receivedDatas() async
         {
             if (this.IpClient == null)
             {
@@ -87,7 +92,7 @@ class ProtocolTcpIpClient extends ProtocolIPSocket
                 {
                     if (this.IpClient?.IsEnable == false)
                     {
-                        this.NotifyDisconnect();
+                        _notifyDisconnect();
                         return;
                     }
 
@@ -96,33 +101,33 @@ class ProtocolTcpIpClient extends ProtocolIPSocket
             }
         }
 
-        private void NotifyDisconnect()
+        void _notifyDisconnect()
         {
-            if (!this.IsSelfClose)
+            if (!isSelfClose)
             {
                 this.IpClient?.Close();
-                this.DispatchDisconnected(this);
+                dispatchDisconnected(this);
             }
         }
 
-        private void StartConnect()
+        void _startConnect()
         {
-            async ValueTask ConnectAsync()
+            Future<void> _connectAsync() async
             {
-                await this.CloseAsync();
-                this.IsSelfClose = false;
+                await closeAsync();
+                isSelfClose = false;
 
                 this.IpClient = new TCPProtocolHelper(this.ReceiveBufferSize, this.SendBufferSize);
 
-                while (this.IsSelfClose == false)
+                while (isSelfClose == false)
                 {
                     try
                     {
                         await this.IpClient.ConnectAsync(this.IpAddress, this.Port);
 
-                        this.DispatchConnected(this);
+                        dispatchConnected(this);
 
-                        this.StartPollingForReceive(this.IpClient);
+                        startPollingForReceive(this.IpClient);
 
                         break;
                     }
@@ -134,6 +139,6 @@ class ProtocolTcpIpClient extends ProtocolIPSocket
                 }
             }
 
-            this.connectTask = ConnectAsync();
+            _connectTask = _connectAsync();
         }
     }
