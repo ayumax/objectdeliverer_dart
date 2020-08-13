@@ -1,60 +1,61 @@
 // Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:async/async.dart';
 
 import '../Utils/growBuffer.dart';
 
 import 'objectdeliverer_protocol.dart';
 
 class ProtocolIPSocket extends ObjectDelivererProtocol {
-        Future<void> _receiveTask;
+  CancelableOperation<void> _receiveTask;
 
-        GrowBuffer receiveBuffer = GrowBuffer();
+  GrowBuffer receiveBuffer = GrowBuffer();
 
-        protected CancellationTokenSource? Canceler { get; set; }
+  Socket ipClient;
 
-        protected IPProtocolHelper? IpClient { get; set; } = null;
+  bool isSelfClose = false;
 
-        protected bool IsSelfClose { get; set; } = false;
+  @override
+  Future<void> startAsync() async {}
 
-        override ValueTask StartAsync()
-        {
-            this.ReceiveBuffer.SetBufferSize(1024);
-            return default(ValueTask);
-        }
-
-        override ValueTask CloseAsync()
-        {
-            if (this.IpClient == null)return default(ValueTask);
-
-            this.IsSelfClose = true;
-
-            this.IpClient.Close();
-
-            this.Canceler?.Cancel();
-
-            this.IpClient = null;
-            this.Canceler = null;
-
-            return default(ValueTask);
-        }
-
-        override ValueTask SendAsync(ReadOnlyMemory<byte> dataBuffer)
-        {
-            if (this.IpClient == null)return default(ValueTask);
-
-            var sendBuffer = this.PacketRule.MakeSendPacket(dataBuffer);
-
-            return this.IpClient.WriteAsync(sendBuffer);
-        }
-
-        void StartPollingForReceive(IPProtocolHelper connectionSocket)
-        {
-            this.IpClient = connectionSocket;
-
-            this.ReceiveBuffer.SetBufferSize(1024);
-
-            this.receiveTask = this.ReceivedDatas();
-        }
-
-        protected virtual Task ReceivedDatas() => Task.CompletedTask;
+  @override
+  Future<void> closeAsync() async {
+    if (ipClient == null) {
+      return;
     }
+
+    isSelfClose = true;
+
+    await ipClient.close();
+
+    _receiveTask.cancel();
+
+    ipClient = null;
+    _receiveTask = null;
+  }
+
+  @override
+  Future<void> sendAsync(Uint8List dataBuffer) async {
+    if (ipClient == null) {
+      return;
+    }
+
+    final Uint8List sendBuffer = packetRule.makeSendPacket(dataBuffer);
+
+    ipClient.add(sendBuffer);
+    return ipClient.flush();
+  }
+
+  void startPollingForReceive(Socket connectionSocket) {
+    ipClient = connectionSocket;
+
+    _receiveTask = CancelableOperation<void>.fromFuture(receivedDatas(), onCancel: () => ,);
+  }
+
+  Future<void> receivedDatas() async => () {};
+}
