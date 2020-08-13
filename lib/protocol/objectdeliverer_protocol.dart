@@ -14,7 +14,7 @@ abstract class ObjectDelivererProtocol {
 
   PublishSubject<ConnectedData> connected = PublishSubject<ConnectedData>();
   PublishSubject<ConnectedData> disconnected = PublishSubject<ConnectedData>();
-  PublishSubject<DeliverData> receiveData = PublishSubject<DeliverData>();
+  PublishSubject<DeliverRawData> receiveData = PublishSubject<DeliverRawData>();
 
   PacketRuleBase packetRule = PacketRuleNodivision();
 
@@ -49,7 +49,7 @@ abstract class ObjectDelivererProtocol {
     disconnected.add(ConnectedData.fromTarget(delivererProtocol));
   }
 
-  void dispatchReceiveData(DeliverData deliverData) {
+  void dispatchReceiveData(DeliverRawData deliverData) {
     receiveData.add(deliverData);
   }
 }

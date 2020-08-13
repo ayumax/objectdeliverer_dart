@@ -1,121 +1,120 @@
 library objectdeliverer_dart;
 
-class ObjectDelivererManager<T> : IAsyncDisposable
-    {
-        private ObjectDelivererProtocol? currentProtocol;
-        private DeliveryBoxBase<T>? deliveryBox;
-        private bool disposedValue = false;
+import 'dart:async';
+import 'dart:core';
+import 'dart:typed_data';
 
-        private Subject<ConnectedData> connected = new Subject<ConnectedData>();
-        private Subject<ConnectedData> disconnected = new Subject<ConnectedData>();
-        private Subject<DeliverData<T>> receiveData = new Subject<DeliverData<T>>();
+import 'package:rxdart/rxdart.dart';
 
-        ObjectDelivererManager()
-        {
-        }
+import 'PacketRule/packetrule_base.dart';
+import 'connected_data.dart';
+import 'deliver_data.dart';
+import 'deliveryBox/deliverybox_base.dart';
+import 'protocol/objectdeliverer_protocol.dart';
 
-        IObservable<ConnectedData> Connected => this.connected;
+class ObjectDelivererManager<T> {
+  ObjectDelivererManager();
 
-        IObservable<ConnectedData> Disconnected => this.disconnected;
+  ObjectDelivererProtocol _currentProtocol;
+  DeliveryBoxBase<T> _deliveryBox;
+  bool _disposedValue = false;
 
-        IObservable<DeliverData<T>> ReceiveData => this.receiveData;
+  PublishSubject<ConnectedData> connected = PublishSubject<ConnectedData>();
+  PublishSubject<ConnectedData> disconnected = PublishSubject<ConnectedData>();
+  PublishSubject<DeliverData<T>> receiveData = PublishSubject<DeliverData<T>>();
 
-        bool IsConnected => this.ConnectedList.Count > 0;
+  bool get isConnected => connectedList.isNotEmpty;
 
-        List<ObjectDelivererProtocol> ConnectedList { get; private set; } = new List<ObjectDelivererProtocol>();
+  final List<ObjectDelivererProtocol> _connectedList =
+      <ObjectDelivererProtocol>[];
+  List<ObjectDelivererProtocol> get connectedList => _connectedList;
 
-        static ObjectDelivererManager<T> CreateObjectDelivererManager() => new ObjectDelivererManager<T>();
-
-        ValueTask StartAsync(ObjectDelivererProtocol protocol, PacketRuleBase packetRule, DeliveryBoxBase<T>? deliveryBox = null)
-        {
-            if (protocol == null || packetRule == null) return default(ValueTask);
-
-            this.currentProtocol = protocol;
-            this.currentProtocol.SetPacketRule(packetRule);
-
-            this.deliveryBox = deliveryBox;
-
-            this.currentProtocol.Connected.Subscribe(x =>
-            {
-                this.ConnectedList.Add(x.Target);
-                this.connected.OnNext(x);
-            });
-
-            this.currentProtocol.Disconnected.Subscribe(x =>
-            {
-                this.ConnectedList.Remove(x.Target);
-                this.disconnected.OnNext(x);
-            });
-
-            this.currentProtocol.ReceiveData.Subscribe(x =>
-            {
-                var data = new DeliverData<T>()
-                {
-                    Sender = x.Sender,
-                    Buffer = x.Buffer,
-                };
-
-                if (deliveryBox != null)
-                {
-                    data.Message = deliveryBox.BufferToMessage(x.Buffer);
-                }
-
-                this.receiveData.OnNext(data);
-            });
-
-            this.ConnectedList.Clear();
-
-            return this.currentProtocol.StartAsync();
-        }
-
-        ValueTask SendAsync(ReadOnlyMemory<byte> dataBuffer)
-        {
-            if (this.currentProtocol == null || this.disposedValue) return default(ValueTask);
-
-            return this.currentProtocol.SendAsync(dataBuffer);
-        }
-
-        ValueTask SendToAsync(ReadOnlyMemory<byte> dataBuffer, ObjectDelivererProtocol? target)
-        {
-            if (this.currentProtocol == null || this.disposedValue) return default(ValueTask);
-
-            if (target != null)
-            {
-                return target.SendAsync(dataBuffer);
-            }
-
-            return default(ValueTask);
-        }
-
-        ValueTask SendMessageAsync(T message)
-        {
-            if (this.deliveryBox == null) return default(ValueTask);
-
-            return this.SendAsync(this.deliveryBox.MakeSendBuffer(message));
-        }
-
-        ValueTask SendToMessageAsync(T message, ObjectDelivererProtocol target)
-        {
-            if (this.deliveryBox == null) return default(ValueTask);
-
-            return this.SendToAsync(this.deliveryBox.MakeSendBuffer(message), target);
-        }
-
-        async ValueTask DisposeAsync()
-        {
-            if (!this.disposedValue)
-            {
-                this.disposedValue = true;
-
-                if (this.currentProtocol == null) return;
-
-                await this.currentProtocol.CloseAsync();
-
-                this.currentProtocol.Dispose();
-
-                this.currentProtocol = null;
-            }
-        }
+  Future<void> startAsync(
+      ObjectDelivererProtocol protocol, PacketRuleBase packetRule,
+      [DeliveryBoxBase<T> deliveryBox]) async {
+    if (protocol == null || packetRule == null) {
+      return;
     }
 
-    class ObjectDelivererManager : ObjectDelivererManager<ReadOnlyMemory<byte>>
+    _currentProtocol = protocol..setPacketRule(packetRule);
+
+    _deliveryBox = deliveryBox;
+
+    _currentProtocol.connected.listen((ConnectedData x) {
+      _connectedList.add(x.target);
+      connected.add(x);
+    });
+
+    _currentProtocol.disconnected.listen((ConnectedData x) {
+      _connectedList.remove(x.target);
+      disconnected.add(x);
+    });
+
+    _currentProtocol.receiveData.listen((DeliverRawData x) {
+      final DeliverData<T> data =
+          DeliverData<T>.fromSenderAndBuffer(x.sender, x.buffer);
+
+      if (deliveryBox != null) {
+        data.message = deliveryBox.bufferToMessage(x.buffer);
+      }
+
+      receiveData.add(data);
+    });
+
+    _connectedList.clear();
+
+    return _currentProtocol.startAsync();
+  }
+
+  Future<void> sendAsync(Uint8List dataBuffer) async {
+    if (_currentProtocol == null || _disposedValue) {
+      return;
+    }
+
+    return _currentProtocol.sendAsync(dataBuffer);
+  }
+
+  Future<void> sendToAsync(
+      Uint8List dataBuffer, ObjectDelivererProtocol target) async {
+    if (_currentProtocol == null || _disposedValue) {
+      return;
+    }
+
+    if (target != null) {
+      return target.sendAsync(dataBuffer);
+    }
+  }
+
+  Future<void> sendMessageAsync(T message) async {
+    if (_deliveryBox == null) {
+      return;
+    }
+
+    return sendAsync(_deliveryBox.makeSendBuffer(message));
+  }
+
+  Future<void> sendToMessageAsync(
+      T message, ObjectDelivererProtocol target) async {
+    if (_deliveryBox == null) {
+      return;
+    }
+
+    return sendToAsync(_deliveryBox.makeSendBuffer(message), target);
+  }
+
+  Future<void> close() async {
+    if (!_disposedValue) {
+      _disposedValue = true;
+
+      if (_currentProtocol == null) {
+        return;
+      }
+
+      await _currentProtocol.closeAsync();
+
+      _currentProtocol.dispose();
+
+      _currentProtocol = null;
+    }
+  }
+}

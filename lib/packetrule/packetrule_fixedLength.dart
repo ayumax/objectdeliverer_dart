@@ -38,7 +38,7 @@ class PacketRuleFixedLength extends PacketRuleBase {
       return;
     }
 
-    yield dataBuffer;
+    yield Uint8List.fromList(dataBuffer);
   }
 
   @override

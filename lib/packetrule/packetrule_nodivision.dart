@@ -19,7 +19,7 @@ class PacketRuleNodivision extends PacketRuleBase {
 
   @override
   Iterable<Uint8List> makeReceivedPacket(Uint8List dataBuffer) sync* {
-    yield dataBuffer;
+    yield Uint8List.fromList(dataBuffer);
   }
 
   @override

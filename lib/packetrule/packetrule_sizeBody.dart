@@ -18,6 +18,8 @@ enum EReceiveMode {
 }
 
 class PacketRuleSizeBody extends PacketRuleBase {
+  PacketRuleSizeBody.fromParam(this.sizeLength, this.sizeBufferEndian);
+
   final GrowBuffer bufferForSend = GrowBuffer();
   EReceiveMode receiveMode = EReceiveMode.Size;
   int bodySize = 0;
@@ -26,84 +28,84 @@ class PacketRuleSizeBody extends PacketRuleBase {
 
   ECNBufferEndian sizeBufferEndian = ECNBufferEndian.Big;
 
-  PacketRuleSizeBody.fromParam(this.sizeLength, this.sizeBufferEndian);
-
   @override
   int get wantSize {
-    if (this.receiveMode == EReceiveMode.Size) {
-      return this.sizeLength;
+    if (receiveMode == EReceiveMode.Size) {
+      return sizeLength;
     }
 
-    return this.bodySize;
+    return bodySize;
   }
 
   @override
   void initialize() {
-    this.bufferForSend.setBufferSize(1024);
-    this.receiveMode = EReceiveMode.Size;
-    this.bodySize = 0;
+    bufferForSend.setBufferSize(1024);
+    receiveMode = EReceiveMode.Size;
+    bodySize = 0;
   }
 
   @override
   Uint8List makeSendPacket(Uint8List bodyBuffer) {
-    var bodyBufferNum = bodyBuffer.length;
-    var sendSize = bodyBufferNum + this.sizeLength;
+    final int bodyBufferNum = bodyBuffer.length;
+    final int sendSize = bodyBufferNum + sizeLength;
 
-    this.bufferForSend.setBufferSize(sendSize);
+    bufferForSend.setBufferSize(sendSize);
 
-    for (int i = 0; i < this.sizeLength; ++i) {
+    for (int i = 0; i < sizeLength; ++i) {
       int offset = 0;
-      if (this.sizeBufferEndian == ECNBufferEndian.Big) {
-        offset = 8 * (this.sizeLength - i - 1);
+      if (sizeBufferEndian == ECNBufferEndian.Big) {
+        offset = 8 * (sizeLength - i - 1);
       } else {
         offset = 8 * i;
       }
 
-      this.bufferForSend.memoryBuffer[i] = ((bodyBufferNum >> offset) & 0xFF);
+      bufferForSend.memoryBuffer[i] = (bodyBufferNum >> offset) & 0xFF;
     }
 
-    this.bufferForSend.copyFrom(bodyBuffer, this.sizeLength);
+    bufferForSend.copyFrom(bodyBuffer, sizeLength);
 
-    return this.bufferForSend.memoryBuffer;
+    return bufferForSend.memoryBuffer;
   }
 
   @override
   Iterable<Uint8List> makeReceivedPacket(Uint8List dataBuffer) sync* {
-    if (this.wantSize > 0 && dataBuffer.length != this.wantSize) return;
-
-    if (this.receiveMode == EReceiveMode.Size) {
-      this.onReceivedSize(dataBuffer);
+    if (wantSize > 0 && dataBuffer.length != wantSize) {
       return;
     }
 
-    this.onReceivedBody(dataBuffer);
+    if (receiveMode == EReceiveMode.Size) {
+      onReceivedSize(dataBuffer);
+      return;
+    }
 
-    yield dataBuffer;
+    onReceivedBody(dataBuffer);
+
+    yield Uint8List.fromList(dataBuffer);
   }
 
   void onReceivedSize(Uint8List dataBuffer) {
-    this.bodySize = 0;
-    for (int i = 0; i < this.sizeLength; ++i) {
+    bodySize = 0;
+    for (int i = 0; i < sizeLength; ++i) {
       int offset = 0;
-      if (this.sizeBufferEndian == ECNBufferEndian.Big) {
-        offset = 8 * (this.sizeLength - i - 1);
+      if (sizeBufferEndian == ECNBufferEndian.Big) {
+        offset = 8 * (sizeLength - i - 1);
       } else {
         offset = 8 * i;
       }
 
-      this.bodySize |= (dataBuffer[i] << offset);
+      bodySize |= dataBuffer[i] << offset;
     }
 
-    this.receiveMode = EReceiveMode.Body;
+    receiveMode = EReceiveMode.Body;
   }
 
   void onReceivedBody(Uint8List dataBuffer) {
-    this.bodySize = 0;
+    bodySize = 0;
 
-    this.receiveMode = EReceiveMode.Size;
+    receiveMode = EReceiveMode.Size;
   }
 
   @override
   PacketRuleBase clone() =>
-      PacketRuleSizeBody.fromParam(this.sizeLength, this.sizeBufferEndian);
+      PacketRuleSizeBody.fromParam(sizeLength, sizeBufferEndian);
 }
