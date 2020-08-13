@@ -14,7 +14,7 @@ class PollingTask {
   CancelableOperation<void> _pollingTask;
   bool _isCancel = false;
 
-  Future<void> disposeAsync() async {
+  Future<void> stopAsync() async {
     if (_pollingTask == null) {
       return;
     }

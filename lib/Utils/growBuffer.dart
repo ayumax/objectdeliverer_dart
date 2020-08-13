@@ -5,67 +5,69 @@ import 'dart:math';
 import 'dart:typed_data';
 
 class GrowBuffer {
-  int _packetSize;
-  Uint8List _innerBuffer = Uint8List();
-
   GrowBuffer({int initialSize = 1024, int packetSize = 1024}) {
-    this._packetSize = packetSize;
-    this.setBufferSize(initialSize);
+    _packetSize = packetSize;
+    setBufferSize(initialSize);
   }
+
+  int _packetSize;
+  Uint8List _innerBuffer = Uint8List(0);
 
   int _length = 0;
   int get length => _length;
 
-  Uint8List get memoryBuffer => this._innerBuffer;
+  Uint8List get memoryBuffer => _innerBuffer;
 
-  int get innerBufferSize => this._innerBuffer.length;
+  int get innerBufferSize => _innerBuffer.length;
 
-  Iterable<int> asSpan(int position, int takeLength) =>
-      this._innerBuffer.skip(position).take(takeLength);
+  Uint8List takeBytes(int position, int takeLength) =>
+      Uint8List.view(_innerBuffer.buffer, position, takeLength);
+
+  Uint8List toBytes(int position, int takeLength) =>
+      Uint8List.fromList(takeBytes(position, takeLength));
+
+  Uint8List toAllBytes() => Uint8List.fromList(_innerBuffer);
 
   bool setBufferSize([int newSize = 0]) {
     bool isGrow = false;
 
-    if (this._innerBuffer.length < newSize) {
-      var oldBuffer = this._innerBuffer;
-      this._innerBuffer =
-          Uint8List(this._packetSize * ((newSize ~/ this._packetSize) + 1));
+    if (_innerBuffer.length < newSize) {
+      final Uint8List oldBuffer = _innerBuffer;
+      _innerBuffer = Uint8List(_packetSize * ((newSize ~/ _packetSize) + 1));
 
-      this._innerBuffer.setRange(0, oldBuffer.length, oldBuffer);
+      _innerBuffer.setRange(0, oldBuffer.length, oldBuffer);
 
       isGrow = true;
     }
 
-    this._length = newSize;
+    _length = newSize;
 
     return isGrow;
   }
 
   void add(Uint8List addBuffer) {
-    this.setBufferSize(this.length + addBuffer.length);
+    setBufferSize(length + addBuffer.length);
 
-    final int startOffset = this.length - addBuffer.length;
-    this
-        ._innerBuffer
-        .setRange(startOffset, startOffset + addBuffer.length, addBuffer);
+    final int startOffset = length - addBuffer.length;
+    _innerBuffer.setRange(
+        startOffset, startOffset + addBuffer.length, addBuffer);
   }
 
   void copyFrom(Uint8List fromBuffer, [int myOffset = 0]) {
-    this._innerBuffer.setRange(myOffset,
-        myOffset + min(fromBuffer.length, this.length - myOffset), fromBuffer);
+    _innerBuffer.setRange(
+        myOffset,
+        myOffset + min(fromBuffer.length, length - myOffset).toInt(),
+        fromBuffer);
   }
 
-  void removeRangeFromStart(int start, int length) {
-    var moveLength = this.length - length;
-    var tempBuffer = Uint8List(moveLength);
+  void removeRangeStart(int length) {
+    final int moveLength = this.length - length;
+    _innerBuffer = toBytes(length, moveLength);
 
-    tempBuffer.setRange(0, moveLength, this._innerBuffer, start + length);
-    this._innerBuffer.setRange(start, moveLength, tempBuffer);
-
-    this._length = moveLength;
+    _length = moveLength;
   }
 
   void clear() {
-    this._innerBuffer.fillRange(0, this._innerBuffer.length, 0);
+    _innerBuffer.fillRange(0, _innerBuffer.length, 0);
   }
 }

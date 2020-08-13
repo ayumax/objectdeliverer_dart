@@ -2,60 +2,58 @@
 // Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:async/async.dart';
+import 'package:mutex/mutex.dart';
 
 import '../Utils/growBuffer.dart';
-
+import '../Utils/polling_task.dart';
+import '../deliver_data.dart';
 import 'objectdeliverer_protocol.dart';
 
-class ProtocolIPSocket extends ObjectDelivererProtocol {
-  CancelableOperation<void> _receiveTask;
+abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
+  void startReceive() {
+    _receiveTask = PollingTask.fromAction(receivedDatas);
+  }
 
-  GrowBuffer receiveBuffer = GrowBuffer();
+  Future<void> stopReceive() async {
+    await _receiveTask.stopAsync();
 
-  Socket ipClient;
-
-  bool isSelfClose = false;
-
-  @override
-  Future<void> startAsync() async {}
-
-  @override
-  Future<void> closeAsync() async {
-    if (ipClient == null) {
-      return;
-    }
-
-    isSelfClose = true;
-
-    await ipClient.close();
-
-    _receiveTask.cancel();
-
-    ipClient = null;
     _receiveTask = null;
   }
 
-  @override
-  Future<void> sendAsync(Uint8List dataBuffer) async {
-    if (ipClient == null) {
-      return;
+  PollingTask _receiveTask;
+
+  GrowBuffer tempReceiveBuffer = GrowBuffer();
+
+  Mutex mutex;
+
+  Future<bool> receivedDatas() async {
+    while (tempReceiveBuffer.length > 0) {
+      await mutex.protect(() async {
+        final int wantSize = packetRule.wantSize;
+
+        if (wantSize > 0) {
+          if (tempReceiveBuffer.length < wantSize) {
+            return true;
+          }
+        }
+
+        final int receiveSize =
+            wantSize == 0 ? tempReceiveBuffer.length : wantSize;
+        final Uint8List spanTempReceiveBuffer =
+            tempReceiveBuffer.takeBytes(0, receiveSize);
+
+        for (final Uint8List receivedMemory
+            in packetRule.makeReceivedPacket(spanTempReceiveBuffer)) {
+          dispatchReceiveData(
+              DeliverRawData.fromSenderAndBuffer(this, receivedMemory));
+        }
+
+        tempReceiveBuffer.removeRangeStart(receiveSize);
+      });
     }
 
-    final Uint8List sendBuffer = packetRule.makeSendPacket(dataBuffer);
-
-    ipClient.add(sendBuffer);
-    return ipClient.flush();
+    return true;
   }
-
-  void startPollingForReceive(Socket connectionSocket) {
-    ipClient = connectionSocket;
-
-    _receiveTask = CancelableOperation<void>.fromFuture(receivedDatas(), onCancel: () => ,);
-  }
-
-  Future<void> receivedDatas() async => () {};
 }
