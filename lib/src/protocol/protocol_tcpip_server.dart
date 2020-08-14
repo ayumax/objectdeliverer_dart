@@ -9,8 +9,7 @@ import 'protocol_tcpip_socket.dart';
 class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   ProtocolTcpIpServer.fromParam(this.listenPort);
 
-  final List<ProtocolTcpIpSocket> _connectedSockets =
-      List<ProtocolTcpIpSocket>(0);
+  final List<ProtocolTcpIpSocket> _connectedSockets = <ProtocolTcpIpSocket>[];
 
   ServerSocket _tcpListener;
   PollingTask _waitClientsTask;
@@ -19,6 +18,8 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
 
   @override
   Future<void> startAsync() async {
+    print('start server');
+
     _tcpListener = await ServerSocket.bind(InternetAddress.anyIPv4, listenPort)
       ..listen((Socket connectedClientSocket) {
         final clientSocket =
@@ -39,7 +40,7 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
     await _tcpListener.close();
     _tcpListener = null;
 
-    final closeTasks = List<Future<void>>(0);
+    final closeTasks = <Future<void>>[];
 
     if (_waitClientsTask != null) {
       closeTasks.add(_waitClientsTask.stopAsync());
@@ -57,7 +58,7 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
 
   @override
   Future<void> sendAsync(Uint8List dataBuffer) {
-    final sendTasks = List<Future<void>>(0);
+    final sendTasks = <Future<void>>[];
 
     for (final clientSocket in _connectedSockets) {
       sendTasks.add(clientSocket.sendAsync(dataBuffer));

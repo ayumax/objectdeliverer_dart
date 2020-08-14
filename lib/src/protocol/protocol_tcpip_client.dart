@@ -20,7 +20,7 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
   Future<void> startAsync() async {
     await super.startAsync();
 
-    _startConnect();
+    await _startConnect();
   }
 
   @override
@@ -41,9 +41,10 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
     }
   }
 
-  void _startConnect() {
+  Future<void> _startConnect() async {
+    await closeAsync();
+
     Future<void> _connectAsync() async {
-      await closeAsync();
       _isSelfClose = false;
 
       ipClient = null;

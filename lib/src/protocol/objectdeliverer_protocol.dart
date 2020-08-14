@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:rxdart/rxdart.dart';
 
-import '../PacketRule/packetrule_base.dart';
-import '../PacketRule/packetrule_nodivision.dart';
 import '../connected_data.dart';
 import '../deliver_data.dart';
+import '../packetrule/packetrule_base.dart';
+import '../packetrule/packetrule_nodivision.dart';
 
 abstract class ObjectDelivererProtocol {
   bool _disposedValue = false;

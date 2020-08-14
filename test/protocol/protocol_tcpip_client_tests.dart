@@ -6,11 +6,20 @@ import 'package:test/test.dart';
 Future<bool> waitCounter(bool Function() checkCondition) {
   final completer = Completer<bool>(); // Completer<T>を作成する。
 
-  Timer(const Duration(seconds: 1), () => completer.complete(false));
+  Timer onceTimer;
+  Timer periodicTimer;
 
-  Timer.periodic(const Duration(microseconds: 10), (timer) {
+  onceTimer = Timer(const Duration(seconds: 1), () {
+    completer.complete(false);
+    onceTimer.cancel();
+    periodicTimer.cancel();
+  });
+
+  periodicTimer = Timer.periodic(const Duration(microseconds: 10), (timer) {
     if (checkCondition()) {
       completer.complete(true);
+      onceTimer.cancel();
+      periodicTimer.cancel();
     }
   });
 
@@ -18,11 +27,11 @@ Future<bool> waitCounter(bool Function() checkCondition) {
 }
 
 Future<void> _testTCPAsync(PacketRuleBase packetRule) async {
-  final client = ProtocolTcpIpClient.fromParam('127.0.0.1', 9013,
+  final client = ProtocolTcpIpClient.fromParam('localhost', 50123,
       autoConnectAfterDisconnect: true)
     ..setPacketRule(packetRule.clonePacketRule());
 
-  var server = ProtocolTcpIpServer.fromParam(9013)
+  final server = ProtocolTcpIpServer.fromParam(50123)
     ..setPacketRule(packetRule.clonePacketRule());
 
   var counter = 2;
@@ -31,10 +40,11 @@ Future<void> _testTCPAsync(PacketRuleBase packetRule) async {
   await server.startAsync();
 
   await client.startAsync();
-
+  print('start wait');
   if (await waitCounter(() => counter == 0) == false) {
     fail('fail tcp connected');
   }
+  print('end wait');
 
   //     {
   //         var expected = new byte[] { 1, 2, 3 };
@@ -121,8 +131,8 @@ Future<void> _testTCPAsync(PacketRuleBase packetRule) async {
   //         }
   //     }
 
-  //     await client.CloseAsync();
-  //     await server.CloseAsync();
+  await client.closeAsync();
+  await server.closeAsync();
   // }
 }
 
@@ -130,6 +140,7 @@ void main() {
   group('TCPIP', () {
     test('size body', () async {
       await _testTCPAsync(PacketRuleSizeBody.fromParam(4));
+      expect(1, 1);
     });
 
     test('fixed size', () async {

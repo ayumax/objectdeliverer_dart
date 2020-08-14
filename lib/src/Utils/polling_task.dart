@@ -18,7 +18,7 @@ class PollingTask {
 
     await _pollingTask.cancel();
 
-    return _pollingTask.value;
+    await _pollingTask.value;
   }
 
   Future<void> runAsync(Future<bool> Function() action) async {
