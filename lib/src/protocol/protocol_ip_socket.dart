@@ -1,6 +1,3 @@
-// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
-
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -31,7 +28,7 @@ abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
   Future<bool> receivedDatas() async {
     while (tempReceiveBuffer.length > 0) {
       await mutex.protect(() async {
-        final int wantSize = packetRule.wantSize;
+        final wantSize = packetRule.wantSize;
 
         if (wantSize > 0) {
           if (tempReceiveBuffer.length < wantSize) {
@@ -39,9 +36,8 @@ abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
           }
         }
 
-        final int receiveSize =
-            wantSize == 0 ? tempReceiveBuffer.length : wantSize;
-        final Uint8List spanTempReceiveBuffer =
+        final receiveSize = wantSize == 0 ? tempReceiveBuffer.length : wantSize;
+        final spanTempReceiveBuffer =
             tempReceiveBuffer.takeBytes(0, receiveSize);
 
         for (final Uint8List receivedMemory

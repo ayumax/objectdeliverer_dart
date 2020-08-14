@@ -1,7 +1,4 @@
-﻿// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
-
-import 'dart:math';
+﻿import 'dart:math';
 import 'dart:typed_data';
 
 class GrowBuffer {
@@ -29,13 +26,12 @@ class GrowBuffer {
   Uint8List toAllBytes() => Uint8List.fromList(_innerBuffer);
 
   bool setBufferSize([int newSize = 0]) {
-    bool isGrow = false;
+    var isGrow = false;
 
     if (_innerBuffer.length < newSize) {
-      final Uint8List oldBuffer = _innerBuffer;
-      _innerBuffer = Uint8List(_packetSize * ((newSize ~/ _packetSize) + 1));
-
-      _innerBuffer.setRange(0, oldBuffer.length, oldBuffer);
+      final oldBuffer = _innerBuffer;
+      _innerBuffer = Uint8List(_packetSize * ((newSize ~/ _packetSize) + 1))
+        ..setRange(0, oldBuffer.length, oldBuffer);
 
       isGrow = true;
     }
@@ -48,7 +44,7 @@ class GrowBuffer {
   void add(Uint8List addBuffer) {
     setBufferSize(length + addBuffer.length);
 
-    final int startOffset = length - addBuffer.length;
+    final startOffset = length - addBuffer.length;
     _innerBuffer.setRange(
         startOffset, startOffset + addBuffer.length, addBuffer);
   }
@@ -61,7 +57,7 @@ class GrowBuffer {
   }
 
   void removeRangeStart(int length) {
-    final int moveLength = this.length - length;
+    final moveLength = this.length - length;
     _innerBuffer = toBytes(length, moveLength);
 
     _length = moveLength;

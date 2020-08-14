@@ -1,7 +1,4 @@
-﻿// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
-
-import 'package:async/async.dart';
+﻿import 'package:async/async.dart';
 
 class PollingTask {
   PollingTask.fromAction(Future<bool> Function() action) {
@@ -19,7 +16,7 @@ class PollingTask {
       return;
     }
 
-    _pollingTask.cancel();
+    await _pollingTask.cancel();
 
     return _pollingTask.value;
   }

@@ -1,13 +1,29 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'package:objectdeliverer_dart/src/deliveryBox/object_json_deliverybox.dart';
+import 'package:test/test.dart';
 
-import 'package:objectdeliverer/objectdeliverer.dart';
+class TestObj extends IJsonSerializable {
+  int prop;
+
+  @override
+  void fromJson(Map<String, dynamic> json) {
+    prop = json['prop'] as int;
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {'prop': prop};
+}
 
 void main() {
-  test('adds one to input values', () {
-    final calculator = Calculator();
-    expect(calculator.addOne(2), 3);
-    expect(calculator.addOne(-7), -6);
-    expect(calculator.addOne(0), 1);
-    expect(() => calculator.addOne(null), throwsNoSuchMethodError);
+  group('DeliveryBox', () {
+    test('Conversion check of Delivery Box', () async {
+      final message = TestObj()..prop = 10;
+
+      final box = ObjectJsonDeliveryBox<TestObj>();
+      final buffer = box.makeSendBuffer(message);
+
+      final box2 = box.bufferToMessage(buffer);
+
+      await expectLater(box2.prop, 10);
+    });
   });
 }
