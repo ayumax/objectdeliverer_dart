@@ -13,7 +13,7 @@ class GrowBuffer {
   int _length = 0;
   int get length => _length;
 
-  Uint8List get memoryBuffer => _innerBuffer;
+  Uint8List get memoryBuffer => takeBytes(0, _length);
 
   int get innerBufferSize => _innerBuffer.length;
 
@@ -23,7 +23,7 @@ class GrowBuffer {
   Uint8List toBytes(int position, int takeLength) =>
       Uint8List.fromList(takeBytes(position, takeLength));
 
-  Uint8List toAllBytes() => Uint8List.fromList(_innerBuffer);
+  Uint8List toAllBytes() => toBytes(0, length);
 
   bool setBufferSize([int newSize = 0]) {
     var isGrow = false;
@@ -58,7 +58,10 @@ class GrowBuffer {
 
   void removeRangeStart(int length) {
     final moveLength = this.length - length;
-    _innerBuffer = toBytes(length, moveLength);
+
+    final oldBuffer = _innerBuffer;
+    _innerBuffer = Uint8List(innerBufferSize)
+      ..setRange(0, moveLength, oldBuffer, length);
 
     _length = moveLength;
   }

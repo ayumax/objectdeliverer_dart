@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import '../Utils/polling_task.dart';
 import '../connected_data.dart';
+import '../utils/polling_task.dart';
 import 'objectdeliverer_protocol.dart';
 import 'protocol_tcpip_socket.dart';
 
 class ProtocolTcpIpServer extends ObjectDelivererProtocol {
+  ProtocolTcpIpServer.fromParam(this.listenPort);
+
   final List<ProtocolTcpIpSocket> _connectedSockets =
       List<ProtocolTcpIpSocket>(0);
 
@@ -24,7 +26,7 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
               ..disconnected.listen(
                   (ConnectedData x) => _clientSocketDisconnected(x.target))
               ..receiveData.listen(dispatchReceiveData)
-              ..setPacketRule(packetRule.clone());
+              ..setPacketRule(packetRule.clonePacketRule());
 
         _connectedSockets.add(clientSocket);
 

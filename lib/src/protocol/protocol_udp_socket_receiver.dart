@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'protocol_ip_Socket.dart';
 
 class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
+  ProtocolUdpSocketReceiver.fromParam(this.boundPort);
+
   int boundPort;
   RawDatagramSocket _udpReceiver;
 

@@ -3,7 +3,23 @@ import 'dart:typed_data';
 import 'deliverybox_base.dart';
 
 abstract class IJsonSerializable {
-  void fromJson(Map<String, dynamic> json);
+  static final Map<Type, IJsonSerializable Function(Map<String, dynamic>)>
+      _makeInstanceFuncMap =
+      <Type, IJsonSerializable Function(Map<String, dynamic>)>{};
+
+  static void addMakeInstanceFunction(Type type,
+      IJsonSerializable Function(Map<String, dynamic>) makeInstanceFunction) {
+    _makeInstanceFuncMap[type] = makeInstanceFunction;
+  }
+
+  static IJsonSerializable makeInstance(Type type, Map<String, dynamic> json) {
+    if (_makeInstanceFuncMap.containsKey(type) == false) {
+      return null;
+    }
+
+    return _makeInstanceFuncMap[type](json);
+  }
+
   Map<String, dynamic> toJson();
 }
 
@@ -27,11 +43,6 @@ class ObjectJsonDeliveryBox<T extends IJsonSerializable>
     final decordedJson =
         jsonDecode(utf8.decode(buffer)) as Map<String, dynamic>;
 
-    T message;
-
-    // ignore: cascade_invocations
-    message.fromJson(decordedJson);
-
-    return message;
+    return IJsonSerializable.makeInstance(T, decordedJson) as T;
   }
 }

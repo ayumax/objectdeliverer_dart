@@ -1,29 +1,21 @@
-import 'package:objectdeliverer_dart/src/deliveryBox/object_json_deliverybox.dart';
-import 'package:test/test.dart';
-
-class TestObj extends IJsonSerializable {
-  int prop;
-
-  @override
-  void fromJson(Map<String, dynamic> json) {
-    prop = json['prop'] as int;
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {'prop': prop};
-}
+import 'deliverybox/object_deliverybox_using_json_tests.dart'
+    as object_deliverybox_using_json;
+import 'deliverybox/utf8string_deliverybox_tests.dart'
+    as utf8string_deliverybox;
+import 'packetrule/packetrule_fixedlength_tests.dart' as packetrule_fixedlength;
+import 'packetrule/packetrule_nodivision_tests.dart' as packetrule_nodivision;
+import 'packetrule/packetrule_sizebody_tests.dart' as packetrule_sizebody;
+import 'packetrule/packetrule_terminate_tests.dart' as packetrule_terminate;
+import 'protocol/protocol_tcpip_client_tests.dart' as protocol_tcpip_client;
+import 'utils/grow_buffer_tests.dart' as grow_buffer;
 
 void main() {
-  group('DeliveryBox', () {
-    test('Conversion check of Delivery Box', () async {
-      final message = TestObj()..prop = 10;
-
-      final box = ObjectJsonDeliveryBox<TestObj>();
-      final buffer = box.makeSendBuffer(message);
-
-      final box2 = box.bufferToMessage(buffer);
-
-      await expectLater(box2.prop, 10);
-    });
-  });
+  object_deliverybox_using_json.main();
+  utf8string_deliverybox.main();
+  packetrule_fixedlength.main();
+  packetrule_nodivision.main();
+  packetrule_sizebody.main();
+  packetrule_terminate.main();
+  grow_buffer.main();
+  protocol_tcpip_client.main();
 }
