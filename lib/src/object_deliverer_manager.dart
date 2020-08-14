@@ -1,5 +1,3 @@
-library objectdeliverer_dart;
-
 import 'dart:async';
 import 'dart:core';
 import 'dart:typed_data';
@@ -51,8 +49,7 @@ class ObjectDelivererManager<T> {
     });
 
     _currentProtocol.receiveData.listen((DeliverRawData x) {
-      final DeliverData<T> data =
-          DeliverData<T>.fromSenderAndBuffer(x.sender, x.buffer);
+      final data = DeliverData<T>.fromSenderAndBuffer(x.sender, x.buffer);
 
       if (deliveryBox != null) {
         data.message = deliveryBox.bufferToMessage(x.buffer);
@@ -112,7 +109,7 @@ class ObjectDelivererManager<T> {
 
       await _currentProtocol.closeAsync();
 
-      _currentProtocol.dispose();
+      await _currentProtocol.dispose();
 
       _currentProtocol = null;
     }

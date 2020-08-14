@@ -1,14 +1,8 @@
-// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
-
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:objectdeliverer_dart/connected_data.dart';
-import 'package:objectdeliverer_dart/deliver_data.dart';
-
 import '../Utils/polling_task.dart';
-
+import '../connected_data.dart';
 import 'objectdeliverer_protocol.dart';
 import 'protocol_tcpip_socket.dart';
 
@@ -23,33 +17,33 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
 
   @override
   Future<void> startAsync() async {
-    _tcpListener = await ServerSocket.bind(InternetAddress.anyIPv4, listenPort);
-    _tcpListener.listen((Socket connectedClientSocket) {
-      final ProtocolTcpIpSocket clientSocket =
-          ProtocolTcpIpSocket.fromConnectedSocket(connectedClientSocket)
-            ..disconnected.listen(
-                (ConnectedData x) => _clientSocketDisconnected(x.target))
-            ..receiveData.listen((DeliverRawData x) => dispatchReceiveData(x))
-            ..setPacketRule(packetRule.clone());
+    _tcpListener = await ServerSocket.bind(InternetAddress.anyIPv4, listenPort)
+      ..listen((Socket connectedClientSocket) {
+        final clientSocket =
+            ProtocolTcpIpSocket.fromConnectedSocket(connectedClientSocket)
+              ..disconnected.listen(
+                  (ConnectedData x) => _clientSocketDisconnected(x.target))
+              ..receiveData.listen(dispatchReceiveData)
+              ..setPacketRule(packetRule.clone());
 
-      _connectedSockets.add(clientSocket);
+        _connectedSockets.add(clientSocket);
 
-      dispatchConnected(clientSocket);
-    });
+        dispatchConnected(clientSocket);
+      });
   }
 
   @override
   Future<void> closeAsync() async {
-    _tcpListener.close();
+    await _tcpListener.close();
     _tcpListener = null;
 
-    final List<Future<void>> closeTasks = List<Future<void>>(0);
+    final closeTasks = List<Future<void>>(0);
 
     if (_waitClientsTask != null) {
       closeTasks.add(_waitClientsTask.stopAsync());
     }
 
-    for (final ProtocolTcpIpSocket clientSocket in _connectedSockets) {
+    for (final clientSocket in _connectedSockets) {
       await clientSocket.closeAsync();
       closeTasks.add(clientSocket.closeAsync());
     }
@@ -61,9 +55,9 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
 
   @override
   Future<void> sendAsync(Uint8List dataBuffer) {
-    final List<Future<void>> sendTasks = List<Future<void>>(0);
+    final sendTasks = List<Future<void>>(0);
 
-    for (final ProtocolTcpIpSocket clientSocket in _connectedSockets) {
+    for (final clientSocket in _connectedSockets) {
       sendTasks.add(clientSocket.sendAsync(dataBuffer));
     }
 
@@ -80,9 +74,8 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
       return;
     }
 
-    final ProtocolTcpIpSocket protocolTcpIp =
-        delivererProtocol as ProtocolTcpIpSocket;
-    final int foundIndex = _connectedSockets.indexOf(protocolTcpIp);
+    final protocolTcpIp = delivererProtocol as ProtocolTcpIpSocket;
+    final foundIndex = _connectedSockets.indexOf(protocolTcpIp);
 
     if (foundIndex >= 0) {
       await protocolTcpIp.closeAsync();

@@ -1,6 +1,3 @@
-// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
-
 import 'dart:typed_data';
 
 import '../Utils/growBuffer.dart';
@@ -40,12 +37,13 @@ class PacketRuleTerminate extends PacketRuleBase {
 
     _receiveTempBuffer.add(dataBuffer);
 
-    int findIndex = -1;
+    var findIndex = -1;
 
+    // ignore: literal_only_boolean_expressions
     while (true) {
-      for (int i = 0; i <= _receiveTempBuffer.length - terminate.length; ++i) {
-        bool notEqual = false;
-        for (int j = 0; j < terminate.length; ++j) {
+      for (var i = 0; i <= _receiveTempBuffer.length - terminate.length; ++i) {
+        var notEqual = false;
+        for (var j = 0; j < terminate.length; ++j) {
           if (_receiveTempBuffer.memoryBuffer[i + j] != terminate[j]) {
             notEqual = true;
             break;
@@ -62,8 +60,9 @@ class PacketRuleTerminate extends PacketRuleBase {
         return;
       }
 
-      _bufferForReceive.setBufferSize(findIndex);
-      _bufferForReceive.copyFrom(_receiveTempBuffer.takeBytes(0, findIndex));
+      _bufferForReceive
+        ..setBufferSize(findIndex)
+        ..copyFrom(_receiveTempBuffer.takeBytes(0, findIndex));
 
       yield _bufferForReceive.toAllBytes();
 

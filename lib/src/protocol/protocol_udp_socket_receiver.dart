@@ -1,6 +1,3 @@
-// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
-
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -44,7 +41,7 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   Future<void> _onReceived(RawSocketEvent udpEvent) async {
     if (udpEvent == RawSocketEvent.read) {
       await mutex.protect(() async {
-        final Datagram datagram = _udpReceiver.receive();
+        final datagram = _udpReceiver.receive();
         tempReceiveBuffer.add(datagram.data);
       });
     }

@@ -1,6 +1,3 @@
-// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -49,7 +46,7 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
       return;
     }
 
-    final Uint8List sendBuffer = packetRule.makeSendPacket(dataBuffer);
+    final sendBuffer = packetRule.makeSendPacket(dataBuffer);
 
     ipClient.add(sendBuffer);
     return ipClient.flush();

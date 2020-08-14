@@ -1,36 +1,35 @@
-// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
 import 'dart:typed_data';
 
-import 'packetrule_base.dart';
 import '../Utils/growBuffer.dart';
+
+import 'packetrule_base.dart';
 
 enum ECNBufferEndian {
   // Big Endian
-  Big,
+  big,
   // Little Endian
-  Little,
+  little,
 }
 
 enum EReceiveMode {
-  Size,
-  Body,
+  size,
+  body,
 }
 
 class PacketRuleSizeBody extends PacketRuleBase {
   PacketRuleSizeBody.fromParam(this.sizeLength, this.sizeBufferEndian);
 
   final GrowBuffer bufferForSend = GrowBuffer();
-  EReceiveMode receiveMode = EReceiveMode.Size;
+  EReceiveMode receiveMode = EReceiveMode.size;
   int bodySize = 0;
 
   int sizeLength = 4;
 
-  ECNBufferEndian sizeBufferEndian = ECNBufferEndian.Big;
+  ECNBufferEndian sizeBufferEndian = ECNBufferEndian.big;
 
   @override
   int get wantSize {
-    if (receiveMode == EReceiveMode.Size) {
+    if (receiveMode == EReceiveMode.size) {
       return sizeLength;
     }
 
@@ -40,20 +39,20 @@ class PacketRuleSizeBody extends PacketRuleBase {
   @override
   void initialize() {
     bufferForSend.setBufferSize(1024);
-    receiveMode = EReceiveMode.Size;
+    receiveMode = EReceiveMode.size;
     bodySize = 0;
   }
 
   @override
   Uint8List makeSendPacket(Uint8List bodyBuffer) {
-    final int bodyBufferNum = bodyBuffer.length;
-    final int sendSize = bodyBufferNum + sizeLength;
+    final bodyBufferNum = bodyBuffer.length;
+    final sendSize = bodyBufferNum + sizeLength;
 
     bufferForSend.setBufferSize(sendSize);
 
-    for (int i = 0; i < sizeLength; ++i) {
-      int offset = 0;
-      if (sizeBufferEndian == ECNBufferEndian.Big) {
+    for (var i = 0; i < sizeLength; ++i) {
+      var offset = 0;
+      if (sizeBufferEndian == ECNBufferEndian.big) {
         offset = 8 * (sizeLength - i - 1);
       } else {
         offset = 8 * i;
@@ -73,7 +72,7 @@ class PacketRuleSizeBody extends PacketRuleBase {
       return;
     }
 
-    if (receiveMode == EReceiveMode.Size) {
+    if (receiveMode == EReceiveMode.size) {
       onReceivedSize(dataBuffer);
       return;
     }
@@ -85,9 +84,9 @@ class PacketRuleSizeBody extends PacketRuleBase {
 
   void onReceivedSize(Uint8List dataBuffer) {
     bodySize = 0;
-    for (int i = 0; i < sizeLength; ++i) {
-      int offset = 0;
-      if (sizeBufferEndian == ECNBufferEndian.Big) {
+    for (var i = 0; i < sizeLength; ++i) {
+      var offset = 0;
+      if (sizeBufferEndian == ECNBufferEndian.big) {
         offset = 8 * (sizeLength - i - 1);
       } else {
         offset = 8 * i;
@@ -96,13 +95,13 @@ class PacketRuleSizeBody extends PacketRuleBase {
       bodySize |= dataBuffer[i] << offset;
     }
 
-    receiveMode = EReceiveMode.Body;
+    receiveMode = EReceiveMode.body;
   }
 
   void onReceivedBody(Uint8List dataBuffer) {
     bodySize = 0;
 
-    receiveMode = EReceiveMode.Size;
+    receiveMode = EReceiveMode.size;
   }
 
   @override

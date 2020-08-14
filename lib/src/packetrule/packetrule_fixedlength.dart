@@ -1,5 +1,3 @@
-// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
 import 'dart:math';
 import 'dart:typed_data';
 import '../Utils/growBuffer.dart';
@@ -24,7 +22,7 @@ class PacketRuleFixedLength extends PacketRuleBase {
   Uint8List makeSendPacket(Uint8List bodyBuffer) {
     bufferForSend.clear();
 
-    final Uint8List sendPacketSpan = Uint8List.fromList(
+    final sendPacketSpan = Uint8List.fromList(
         bodyBuffer.take(min(bodyBuffer.length, fixedSize)).toList());
 
     bufferForSend.copyFrom(sendPacketSpan);

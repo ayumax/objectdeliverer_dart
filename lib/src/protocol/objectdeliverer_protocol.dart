@@ -1,5 +1,3 @@
-// Copyright (c) 2020 ayuma_x. All rights reserved.
-// Licensed under the BSD license. See LICENSE file in the project root for full license information.
 import 'dart:typed_data';
 
 import 'package:rxdart/rxdart.dart';
@@ -30,9 +28,9 @@ abstract class ObjectDelivererProtocol {
   }
 
   Future<void> dispose() async {
-    connected.close();
-    disconnected.close();
-    receiveData.close();
+    await connected.close();
+    await disconnected.close();
+    await receiveData.close();
 
     if (!_disposedValue) {
       await closeAsync();
