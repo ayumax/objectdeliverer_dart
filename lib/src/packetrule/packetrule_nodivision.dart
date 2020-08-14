@@ -20,5 +20,5 @@ class PacketRuleNodivision extends PacketRuleBase {
   }
 
   @override
-  PacketRuleBase clone() => PacketRuleNodivision();
+  PacketRuleBase clonePacketRule() => PacketRuleNodivision();
 }

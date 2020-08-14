@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../Utils/growBuffer.dart';
+import '../utils/grow_buffer.dart';
 
 import 'packetrule_base.dart';
 
@@ -17,7 +17,8 @@ enum EReceiveMode {
 }
 
 class PacketRuleSizeBody extends PacketRuleBase {
-  PacketRuleSizeBody.fromParam(this.sizeLength, this.sizeBufferEndian);
+  PacketRuleSizeBody.fromParam(this.sizeLength,
+      {this.sizeBufferEndian = ECNBufferEndian.big});
 
   final GrowBuffer bufferForSend = GrowBuffer();
   EReceiveMode receiveMode = EReceiveMode.size;
@@ -105,6 +106,6 @@ class PacketRuleSizeBody extends PacketRuleBase {
   }
 
   @override
-  PacketRuleBase clone() =>
-      PacketRuleSizeBody.fromParam(sizeLength, sizeBufferEndian);
+  PacketRuleBase clonePacketRule() => PacketRuleSizeBody.fromParam(sizeLength,
+      sizeBufferEndian: sizeBufferEndian);
 }

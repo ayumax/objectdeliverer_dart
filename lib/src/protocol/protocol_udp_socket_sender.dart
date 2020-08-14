@@ -4,6 +4,9 @@ import 'dart:typed_data';
 import 'objectdeliverer_protocol.dart';
 
 class ProtocolUdpSocketSender extends ObjectDelivererProtocol {
+  ProtocolUdpSocketSender.fromParam(
+      this.destinationIpAddress, this.destinationPort);
+
   String destinationIpAddress = '127.0.0.1';
 
   int destinationPort = 0;

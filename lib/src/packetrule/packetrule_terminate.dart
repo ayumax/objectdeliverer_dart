@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../Utils/growBuffer.dart';
+import '../utils/grow_buffer.dart';
 import 'packetrule_base.dart';
 
 class PacketRuleTerminate extends PacketRuleBase {
@@ -24,7 +24,7 @@ class PacketRuleTerminate extends PacketRuleBase {
 
   @override
   Uint8List makeSendPacket(Uint8List bodyBuffer) {
-    _bufferForSend.add(terminate);
+    _bufferForSend..add(bodyBuffer)..add(terminate);
 
     return _bufferForSend.memoryBuffer;
   }
@@ -73,5 +73,5 @@ class PacketRuleTerminate extends PacketRuleBase {
   }
 
   @override
-  PacketRuleBase clone() => PacketRuleTerminate.fromParam(terminate);
+  PacketRuleBase clonePacketRule() => PacketRuleTerminate.fromParam(terminate);
 }

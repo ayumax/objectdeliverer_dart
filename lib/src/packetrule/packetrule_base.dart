@@ -3,7 +3,7 @@ import 'dart:typed_data';
 abstract class PacketRuleBase {
   int get wantSize;
 
-  PacketRuleBase clone();
+  PacketRuleBase clonePacketRule();
 
   void initialize();
 

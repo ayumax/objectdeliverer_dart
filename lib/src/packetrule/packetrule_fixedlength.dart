@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'dart:typed_data';
-import '../Utils/growBuffer.dart';
+import '../utils/grow_buffer.dart';
 import 'packetrule_base.dart';
 
 class PacketRuleFixedLength extends PacketRuleBase {
@@ -40,5 +40,6 @@ class PacketRuleFixedLength extends PacketRuleBase {
   }
 
   @override
-  PacketRuleBase clone() => PacketRuleFixedLength.fromParam(fixedSize);
+  PacketRuleBase clonePacketRule() =>
+      PacketRuleFixedLength.fromParam(fixedSize);
 }

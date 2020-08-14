@@ -3,6 +3,9 @@ import 'objectdeliverer_protocol.dart';
 import 'protocol_tcpip_socket.dart';
 
 class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
+  ProtocolTcpIpClient.fromParam(this.ipAddress, this.port,
+      {this.autoConnectAfterDisconnect});
+
   Future<void> _connectTask;
 
   String ipAddress = '127.0.0.1';

@@ -3,9 +3,9 @@ import 'dart:typed_data';
 
 import 'package:mutex/mutex.dart';
 
-import '../Utils/growBuffer.dart';
-import '../Utils/polling_task.dart';
 import '../deliver_data.dart';
+import '../utils/grow_buffer.dart';
+import '../utils/polling_task.dart';
 import 'objectdeliverer_protocol.dart';
 
 abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
@@ -40,7 +40,7 @@ abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
         final spanTempReceiveBuffer =
             tempReceiveBuffer.takeBytes(0, receiveSize);
 
-        for (final Uint8List receivedMemory
+        for (final receivedMemory
             in packetRule.makeReceivedPacket(spanTempReceiveBuffer)) {
           dispatchReceiveData(
               DeliverRawData.fromSenderAndBuffer(this, receivedMemory));
