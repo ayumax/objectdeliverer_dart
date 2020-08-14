@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:mutex/mutex.dart';
 
@@ -23,7 +22,7 @@ abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
 
   GrowBuffer tempReceiveBuffer = GrowBuffer();
 
-  Mutex mutex;
+  Mutex mutex = Mutex();
 
   Future<bool> receivedDatas() async {
     while (tempReceiveBuffer.length > 0) {
