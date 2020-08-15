@@ -8,7 +8,7 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
   ProtocolTcpIpSocket();
   ProtocolTcpIpSocket.fromConnectedSocket(this.ipClient) {
     ipClient.listen(_onReceived,
-        onError: _onError, onDone: _onDone, cancelOnError: true);
+        onError: _onError, onDone: onDone, cancelOnError: true);
 
     dispatchConnected(this);
 
@@ -18,7 +18,7 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
   Future startConnect(String ipAddress, int port) async {
     ipClient = await Socket.connect(ipAddress, port)
       ..listen(_onReceived,
-          onError: _onError, onDone: _onDone, cancelOnError: true);
+          onError: _onError, onDone: onDone, cancelOnError: true);
 
     dispatchConnected(this);
 
@@ -65,14 +65,20 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
     });
   }
 
-  void _onError(Object er) {
-    ipClient.close();
-    dispatchDisconnected(this);
+  void _onError(Object er) async {
+    onDone();
   }
 
-  void _onDone() {
-    if (_selfClose == false) {
-      ipClient.close();
+  void onDone() async {
+    if (_selfClose == false && ipClient != null) {
+      await ipClient.close();
+      if (ipClient != null) {
+        ipClient.destroy();
+      }
+
+      await stopReceive();
+
+      ipClient = null;
       dispatchDisconnected(this);
     }
   }

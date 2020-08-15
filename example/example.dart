@@ -109,14 +109,6 @@ Future changeOfSerializationMethodString() async {
 
 // Object
 class SampleObj extends IJsonSerializable {
-  SampleObj() {
-    IJsonSerializable.addMakeInstanceFunction(SampleObj, (json) {
-      final obj = SampleObj();
-      prop = json['prop'] as int;
-      stringProp = json['stringProp'] as String;
-      return obj;
-    });
-  }
   int prop;
   String stringProp;
 
@@ -127,6 +119,13 @@ class SampleObj extends IJsonSerializable {
 }
 
 Future changeOfSerializationMethodObject() async {
+  IJsonSerializable.addMakeInstanceFunction(SampleObj, (json) {
+    final obj = SampleObj()
+      ..prop = json['prop'] as int
+      ..stringProp = json['stringProp'] as String;
+    return obj;
+  });
+
   final deliverer = ObjectDelivererManager<SampleObj>();
 
   await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),

@@ -29,7 +29,7 @@ Future<bool> waitCounter(bool Function() checkCondition,
 
 Future _testTCPAsync(PacketRuleBase packetRule) async {
   final client = ProtocolTcpIpClient.fromParam('localhost', 50123,
-      autoConnectAfterDisconnect: true)
+      autoConnectAfterDisconnect: false)
     ..setPacketRule(packetRule.clonePacketRule());
 
   final server = ProtocolTcpIpServer.fromParam(50123)

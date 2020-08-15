@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'objectdeliverer_protocol.dart';
 import 'protocol_tcpip_socket.dart';
 
 class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
@@ -33,18 +32,7 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
     await _connectTask;
   }
 
-  @override
-  void dispatchDisconnected(ObjectDelivererProtocol delivererProtocol) {
-    super.dispatchDisconnected(delivererProtocol);
-
-    if (autoConnectAfterDisconnect) {
-      _startConnect();
-    }
-  }
-
   Future _startConnect() async {
-    //await closeAsync();
-
     Future _connectAsync() async {
       _isSelfClose = false;
 
@@ -62,8 +50,17 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
       }
     }
 
-    // ignore: join_return_with_assignment
     _connectTask = _connectAsync();
     return _connectTask;
+  }
+
+  @override
+  void onDone() async {
+    super.onDone();
+
+    if (_isSelfClose == false && autoConnectAfterDisconnect) {
+      // ignore: unawaited_futures
+      _startConnect();
+    }
   }
 }
