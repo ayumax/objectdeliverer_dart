@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import '../connected_data.dart';
-import '../utils/polling_task.dart';
 import 'objectdeliverer_protocol.dart';
 import 'protocol_tcpip_socket.dart';
 
@@ -12,14 +11,11 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   final List<ProtocolTcpIpSocket> _connectedSockets = <ProtocolTcpIpSocket>[];
 
   ServerSocket _tcpListener;
-  PollingTask _waitClientsTask;
 
   int listenPort;
 
   @override
-  Future<void> startAsync() async {
-    print('start server');
-
+  Future startAsync() async {
     _tcpListener = await ServerSocket.bind(InternetAddress.anyIPv4, listenPort)
       ..listen((Socket connectedClientSocket) {
         final clientSocket =
@@ -36,18 +32,13 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   }
 
   @override
-  Future<void> closeAsync() async {
+  Future closeAsync() async {
     await _tcpListener.close();
     _tcpListener = null;
 
-    final closeTasks = <Future<void>>[];
-
-    if (_waitClientsTask != null) {
-      closeTasks.add(_waitClientsTask.stopAsync());
-    }
+    final closeTasks = <Future>[];
 
     for (final clientSocket in _connectedSockets) {
-      await clientSocket.closeAsync();
       closeTasks.add(clientSocket.closeAsync());
     }
 
@@ -57,8 +48,8 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   }
 
   @override
-  Future<void> sendAsync(Uint8List dataBuffer) {
-    final sendTasks = <Future<void>>[];
+  Future sendAsync(Uint8List dataBuffer) {
+    final sendTasks = <Future>[];
 
     for (final clientSocket in _connectedSockets) {
       sendTasks.add(clientSocket.sendAsync(dataBuffer));
@@ -67,7 +58,7 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
     return Future.wait(sendTasks);
   }
 
-  Future<void> _clientSocketDisconnected(
+  Future _clientSocketDisconnected(
       ObjectDelivererProtocol delivererProtocol) async {
     if (delivererProtocol == null) {
       return;

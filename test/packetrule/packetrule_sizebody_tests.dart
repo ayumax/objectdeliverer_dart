@@ -7,7 +7,7 @@ void main() {
   group('PacketRuleSizeBody MakeSendPacketTest', () {
     test('size is big endian', () async {
       final packetRule =
-          PacketRuleSizeBody.fromParam(4, sizeBufferEndian: ECNBufferEndian.big)
+          PacketRuleSizeBody.fromParam(4, sizeBufferEndian: Endian.big)
             ..initialize();
 
       final expected = Uint8List.fromList(List.generate(10, (index) => index));
@@ -22,9 +22,9 @@ void main() {
     });
 
     test('size is littel endian', () async {
-      final packetRule = PacketRuleSizeBody.fromParam(4,
-          sizeBufferEndian: ECNBufferEndian.little)
-        ..initialize();
+      final packetRule =
+          PacketRuleSizeBody.fromParam(4, sizeBufferEndian: Endian.little)
+            ..initialize();
 
       final expected = Uint8List.fromList(List.generate(10, (index) => index));
       final actual = packetRule.makeSendPacket(expected);
@@ -41,7 +41,7 @@ void main() {
   group('PacketRuleSizeBody MakeReceivedPacket', () {
     test('size is big endian', () async {
       final packetRule =
-          PacketRuleSizeBody.fromParam(4, sizeBufferEndian: ECNBufferEndian.big)
+          PacketRuleSizeBody.fromParam(4, sizeBufferEndian: Endian.big)
             ..initialize();
 
       await expectLater(packetRule.wantSize, packetRule.sizeLength);
@@ -61,9 +61,9 @@ void main() {
     });
 
     test('size is littele endian', () async {
-      final packetRule = PacketRuleSizeBody.fromParam(4,
-          sizeBufferEndian: ECNBufferEndian.little)
-        ..initialize();
+      final packetRule =
+          PacketRuleSizeBody.fromParam(4, sizeBufferEndian: Endian.little)
+            ..initialize();
 
       await expectLater(packetRule.wantSize, packetRule.sizeLength);
 

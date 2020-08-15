@@ -12,10 +12,12 @@ abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
     _receiveTask = PollingTask.fromAction(receivedDatas);
   }
 
-  Future<void> stopReceive() async {
-    await _receiveTask.stopAsync();
+  Future stopReceive() async {
+    if (_receiveTask != null) {
+      await _receiveTask.stopAsync();
 
-    _receiveTask = null;
+      _receiveTask = null;
+    }
   }
 
   PollingTask _receiveTask;

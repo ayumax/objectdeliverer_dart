@@ -5,23 +5,33 @@ import 'objectdeliverer_protocol.dart';
 
 class ProtocolUdpSocketSender extends ObjectDelivererProtocol {
   ProtocolUdpSocketSender.fromParam(
-      this.destinationIpAddress, this.destinationPort);
+      String destinationIpAddress, this.destinationPort) {
+    this.destinationIpAddress = destinationIpAddress;
+  }
 
-  String destinationIpAddress = '127.0.0.1';
+  String _destinationIpAddress = '127.0.0.1';
+  String get destinationIpAddress => _destinationIpAddress;
+  set destinationIpAddress(String newValue) {
+    if (newValue.toLowerCase() == 'localhost') {
+      _destinationIpAddress = '127.0.0.1';
+    } else {
+      _destinationIpAddress = newValue;
+    }
+  }
 
   int destinationPort = 0;
 
   RawDatagramSocket _udpSender;
 
   @override
-  Future<void> startAsync() async {
+  Future startAsync() async {
     _udpSender = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
 
     dispatchConnected(this);
   }
 
   @override
-  Future<void> closeAsync() async {
+  Future closeAsync() async {
     if (_udpSender == null) {
       return;
     }
@@ -32,12 +42,13 @@ class ProtocolUdpSocketSender extends ObjectDelivererProtocol {
   }
 
   @override
-  Future<void> sendAsync(Uint8List dataBuffer) async {
+  Future sendAsync(Uint8List dataBuffer) async {
     if (_udpSender == null) {
       return;
     }
 
+    final sendBuffer = packetRule.makeSendPacket(dataBuffer);
     _udpSender.send(
-        dataBuffer, InternetAddress(destinationIpAddress), destinationPort);
+        sendBuffer, InternetAddress(destinationIpAddress), destinationPort);
   }
 }

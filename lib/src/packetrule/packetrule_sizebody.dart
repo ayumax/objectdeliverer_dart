@@ -4,13 +4,6 @@ import '../utils/grow_buffer.dart';
 
 import 'packetrule_base.dart';
 
-enum ECNBufferEndian {
-  // Big Endian
-  big,
-  // Little Endian
-  little,
-}
-
 enum EReceiveMode {
   size,
   body,
@@ -18,7 +11,7 @@ enum EReceiveMode {
 
 class PacketRuleSizeBody extends PacketRuleBase {
   PacketRuleSizeBody.fromParam(this.sizeLength,
-      {this.sizeBufferEndian = ECNBufferEndian.big});
+      {this.sizeBufferEndian = Endian.big});
 
   final GrowBuffer bufferForSend = GrowBuffer();
   EReceiveMode receiveMode = EReceiveMode.size;
@@ -26,7 +19,7 @@ class PacketRuleSizeBody extends PacketRuleBase {
 
   int sizeLength = 4;
 
-  ECNBufferEndian sizeBufferEndian = ECNBufferEndian.big;
+  Endian sizeBufferEndian = Endian.big;
 
   @override
   int get wantSize {
@@ -53,7 +46,7 @@ class PacketRuleSizeBody extends PacketRuleBase {
 
     for (var i = 0; i < sizeLength; ++i) {
       var offset = 0;
-      if (sizeBufferEndian == ECNBufferEndian.big) {
+      if (sizeBufferEndian == Endian.big) {
         offset = 8 * (sizeLength - i - 1);
       } else {
         offset = 8 * i;
@@ -87,7 +80,7 @@ class PacketRuleSizeBody extends PacketRuleBase {
     bodySize = 0;
     for (var i = 0; i < sizeLength; ++i) {
       var offset = 0;
-      if (sizeBufferEndian == ECNBufferEndian.big) {
+      if (sizeBufferEndian == Endian.big) {
         offset = 8 * (sizeLength - i - 1);
       } else {
         offset = 8 * i;

@@ -1,17 +1,14 @@
 name: objectdeliverer_dart
 description: ObjectDeliverer is a data transmission / reception library for Dart.
 version: 0.0.1
-author: ayumax
 homepage: https://github.com/ayumax/objectdeliverer_dart
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
 
-
 dependencies:
-  rxdart: 0.24.1
-  async: 2.4.2
-  mutex: 1.1.0
+  async: ^2.4.2
+  mutex: ^1.1.0
 
 dev_dependencies:
   pedantic_mono: any

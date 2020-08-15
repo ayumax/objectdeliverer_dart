@@ -1,60 +1,8 @@
-# objectdeliverer_dart
+import 'dart:typed_data';
 
-## NuGet packages
-[https://www.nuget.org/packages/ObjectDeliverer/](https://www.nuget.org/packages/ObjectDeliverer/)
+import 'package:objectdeliverer_dart/objectdeliverer_dart.dart';
 
-To install with NuGet, just install the ObjectDeliverer package:
-
-```
-Install-Package ObjectDeliverer
-```
-
-## Description
-ObjectDeliverer is a data transmission / reception library for dart.
-
-It is a sister library of the same name for UE4.
-
-https://github.com/ayumax/ObjectDeliverer
-
-It has the following features.
-
-+ Communication protocol, data division rule, serialization method can be switched by part replacement.
-+ It is also possible to apply your own object serialization method
-
-## Communication protocol
-The following protocols can be used with built-in.
-You can also add your own protocol.
-+ TCP/IP Server(Connectable to multiple clients)
-+ TCP/IP Client
-+ UDP(Sender)
-+ UDP(Receiver)
-
-## Data division rule
-The following rules are available for built-in split rules of transmitted and received data.
-+ FixedSize  
-	Example) In the case of fixed 1024 bytes
-	![fixedlength](https://user-images.githubusercontent.com/8191970/56475737-7d999f00-64c7-11e9-8e9e-0182f1af8156.png)
-
-
-+ Header(BodySize) + Body  
-	Example) When the size area is 4 bytes  
-	![sizeandbody](https://user-images.githubusercontent.com/8191970/56475796-6e672100-64c8-11e9-8cf0-6524f2899be0.png)
-
-
-+ Split by terminal symbol  
-	Example) When 0x00 is the end
-	![terminate](https://user-images.githubusercontent.com/8191970/56475740-82f6e980-64c7-11e9-91a6-05d77cfdbd60.png)
-
-## Serialization method
-+ Byte Array
-+ UTF-8 string
-+ Object(Json)
-
-
-# Quick Start
-Create ObjectDelivererManager and create various communication paths by passing "Communication Protocol", "Packet Split Rule" and "Serialization Method" to the arguments of StartAsync method.
-
-```cs
+Future quickStart() async {
   // Create an ObjectDelivererManager
   final deliverer = ObjectDelivererManager<String>();
 
@@ -84,58 +32,66 @@ Create ObjectDelivererManager and create various communication paths by passing 
 
   // Close ObjectDelivererManager
   await deliverer.close();
+}
 
-```
+Future changeCommunicationProtocol() async {
+  final deliverer = ObjectDelivererManager<String>();
 
-# Change communication protocol
-You can switch to various communication protocols by changing the Protocol passed to the StartAsync method.
-
-```cs
   // TCP/IP Client
   await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
 
+  await deliverer.close();
+
   // TCP/IP Server
   await deliverer.startAsync(
       ProtocolTcpIpServer.fromParam(9013), PacketRuleFixedLength.fromParam(10));
+
+  await deliverer.close();
 
   // UDP Sender
   await deliverer.startAsync(
       ProtocolUdpSocketSender.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
 
+  await deliverer.close();
+
   // UDP Receiver
   await deliverer.startAsync(ProtocolUdpSocketReceiver.fromParam(9013),
       PacketRuleFixedLength.fromParam(10));
 
-```
+  await deliverer.close();
+}
 
-# Change of data division rule
-You can easily change the packet splitting rule.
+Future changeOfDataDivisionRule() async {
+  final deliverer = ObjectDelivererManager<String>();
 
-```cs
   // FixedSize
   await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
+
+  await deliverer.close();
 
   // Header(BodySize) + Body
   await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleSizeBody.fromParam(4, sizeBufferEndian: Endian.big));
 
+  await deliverer.close();
 
   // Split by terminal symbol
   await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleTerminate.fromParam(Uint8List.fromList([0xFE, 0xFF])));
 
+  await deliverer.close();
+
   // Nodivision
   await deliverer.startAsync(
       ProtocolTcpIpClient.fromParam('127.0.0.1', 9013), PacketRuleNodivision());
-```
 
-# Change of Serialization method
-Using DeliveryBox enables sending and receiving of non-binary data (character strings and objects).
+  await deliverer.close();
+}
 
-```cs
+Future changeOfSerializationMethodString() async {
   // UTF-8 string
   final deliverer = ObjectDelivererManager<String>();
 
@@ -145,9 +101,12 @@ Using DeliveryBox enables sending and receiving of non-binary data (character st
   deliverer.receiveData.listen((x) => print(x.message));
 
   await deliverer.sendMessageAsync('ABCDEFG');
-```
 
-```cs
+  await Future.delayed(const Duration(milliseconds: 100));
+
+  await deliverer.close();
+}
+
 // Object
 class SampleObj extends IJsonSerializable {
   SampleObj() {
@@ -167,6 +126,7 @@ class SampleObj extends IJsonSerializable {
   Map<String, dynamic> toJson() => {'prop': prop, 'stringProp': stringProp};
 }
 
+Future changeOfSerializationMethodObject() async {
   final deliverer = ObjectDelivererManager<SampleObj>();
 
   await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
@@ -179,4 +139,11 @@ class SampleObj extends IJsonSerializable {
     ..stringProp = 'abc';
   await deliverer.sendMessageAsync(sampleObj);
 
-```
+  await Future.delayed(const Duration(milliseconds: 100));
+
+  await deliverer.close();
+}
+
+Future main() async {
+  await quickStart();
+}
