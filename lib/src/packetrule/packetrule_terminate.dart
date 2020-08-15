@@ -24,7 +24,10 @@ class PacketRuleTerminate extends PacketRuleBase {
 
   @override
   Uint8List makeSendPacket(Uint8List bodyBuffer) {
-    _bufferForSend..add(bodyBuffer)..add(terminate);
+    _bufferForSend
+      ..setBufferSize(0)
+      ..add(bodyBuffer)
+      ..add(terminate);
 
     return _bufferForSend.memoryBuffer;
   }

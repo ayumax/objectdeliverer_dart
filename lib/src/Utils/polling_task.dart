@@ -11,23 +11,23 @@ class PollingTask {
   CancelableOperation<void> _pollingTask;
   bool _isCancel = false;
 
-  Future<void> stopAsync() async {
+  Future stopAsync() async {
     if (_pollingTask == null) {
       return;
     }
 
     await _pollingTask.cancel();
 
-    await _pollingTask.value;
+    await _pollingTask.valueOrCancellation();
   }
 
-  Future<void> runAsync(Future<bool> Function() action) async {
+  Future runAsync(Future<bool> Function() action) async {
     while (_isCancel == false) {
       if (await action() == false) {
         break;
       }
 
-      await Future<void>.delayed(const Duration(milliseconds: 1));
+      await Future.delayed(const Duration(milliseconds: 1));
     }
   }
 

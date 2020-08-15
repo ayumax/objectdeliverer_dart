@@ -1,6 +1,5 @@
+import 'dart:async';
 import 'dart:typed_data';
-
-import 'package:rxdart/rxdart.dart';
 
 import '../connected_data.dart';
 import '../deliver_data.dart';
@@ -10,27 +9,31 @@ import '../packetrule/packetrule_nodivision.dart';
 abstract class ObjectDelivererProtocol {
   bool _disposedValue = false;
 
-  PublishSubject<ConnectedData> connected = PublishSubject<ConnectedData>();
-  PublishSubject<ConnectedData> disconnected = PublishSubject<ConnectedData>();
-  PublishSubject<DeliverRawData> receiveData = PublishSubject<DeliverRawData>();
+  final _connected = StreamController<ConnectedData>.broadcast();
+  final _disconnected = StreamController<ConnectedData>.broadcast();
+  final _receiveData = StreamController<DeliverRawData>.broadcast();
+
+  Stream<ConnectedData> get connected => _connected.stream;
+  Stream<ConnectedData> get disconnected => _disconnected.stream;
+  Stream<DeliverRawData> get receiveData => _receiveData.stream;
 
   PacketRuleBase packetRule = PacketRuleNodivision();
 
-  Future<void> startAsync();
+  Future startAsync();
 
-  Future<void> closeAsync();
+  Future closeAsync();
 
-  Future<void> sendAsync(Uint8List dataBuffer);
+  Future sendAsync(Uint8List dataBuffer);
 
   void setPacketRule(PacketRuleBase packetRule) {
     this.packetRule = packetRule;
     packetRule.initialize();
   }
 
-  Future<void> dispose() async {
-    await connected.close();
-    await disconnected.close();
-    await receiveData.close();
+  Future dispose() async {
+    await _connected.close();
+    await _disconnected.close();
+    await _receiveData.close();
 
     if (!_disposedValue) {
       await closeAsync();
@@ -40,14 +43,14 @@ abstract class ObjectDelivererProtocol {
   }
 
   void dispatchConnected(ObjectDelivererProtocol delivererProtocol) {
-    connected.add(ConnectedData.fromTarget(delivererProtocol));
+    _connected.sink.add(ConnectedData.fromTarget(delivererProtocol));
   }
 
   void dispatchDisconnected(ObjectDelivererProtocol delivererProtocol) {
-    disconnected.add(ConnectedData.fromTarget(delivererProtocol));
+    _disconnected.sink.add(ConnectedData.fromTarget(delivererProtocol));
   }
 
   void dispatchReceiveData(DeliverRawData deliverData) {
-    receiveData.add(deliverData);
+    _receiveData.sink.add(deliverData);
   }
 }

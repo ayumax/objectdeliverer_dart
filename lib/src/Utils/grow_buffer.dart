@@ -2,7 +2,7 @@
 import 'dart:typed_data';
 
 class GrowBuffer {
-  GrowBuffer({int initialSize = 1024, int packetSize = 1024}) {
+  GrowBuffer({int initialSize = 0, int packetSize = 1024}) {
     _packetSize = packetSize;
     setBufferSize(initialSize);
   }

@@ -10,12 +10,12 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   RawDatagramSocket _udpReceiver;
 
   @override
-  Future<void> startAsync() async {
+  Future startAsync() async {
     _udpReceiver =
         await RawDatagramSocket.bind(InternetAddress.anyIPv4, boundPort)
           ..readEventsEnabled = true
           ..writeEventsEnabled = false
-          ..listen(_onReceived, onError: _onError, cancelOnError: false);
+          ..listen(_onReceived, onError: _onError, cancelOnError: true);
 
     dispatchConnected(this);
 
@@ -23,7 +23,7 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   }
 
   @override
-  Future<void> closeAsync() async {
+  Future closeAsync() async {
     if (_udpReceiver == null) {
       return;
     }
@@ -36,16 +36,18 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   }
 
   @override
-  Future<void> sendAsync(Uint8List dataBuffer) async {
+  Future sendAsync(Uint8List dataBuffer) async {
     // no send
   }
 
-  Future<void> _onReceived(RawSocketEvent udpEvent) async {
+  Future _onReceived(RawSocketEvent udpEvent) async {
     if (udpEvent == RawSocketEvent.read) {
-      await mutex.protect(() async {
-        final datagram = _udpReceiver.receive();
-        tempReceiveBuffer.add(datagram.data);
-      });
+      final datagram = _udpReceiver.receive();
+      if (datagram != null) {
+        await mutex.protect(() async {
+          tempReceiveBuffer.add(datagram.data);
+        });
+      }
     }
   }
 

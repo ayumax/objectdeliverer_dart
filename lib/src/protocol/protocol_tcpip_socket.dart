@@ -7,15 +7,18 @@ import 'protocol_ip_Socket.dart';
 class ProtocolTcpIpSocket extends ProtocolIpSocket {
   ProtocolTcpIpSocket();
   ProtocolTcpIpSocket.fromConnectedSocket(this.ipClient) {
-    ipClient.listen(_onReceived, onError: _onError, cancelOnError: false);
+    ipClient.listen(_onReceived,
+        onError: _onError, onDone: _onDone, cancelOnError: true);
+
     dispatchConnected(this);
 
     startReceive();
   }
 
-  Future<void> startConnect(String ipAddress, int port) async {
+  Future startConnect(String ipAddress, int port) async {
     ipClient = await Socket.connect(ipAddress, port)
-      ..listen(_onReceived, onError: _onError, cancelOnError: false);
+      ..listen(_onReceived,
+          onError: _onError, onDone: _onDone, cancelOnError: true);
 
     dispatchConnected(this);
 
@@ -23,17 +26,21 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
   }
 
   Socket ipClient;
+  bool _selfClose = false;
 
   @override
-  Future<void> startAsync() async {}
+  Future startAsync() async {}
 
   @override
-  Future<void> closeAsync() async {
+  Future closeAsync() async {
     if (ipClient == null) {
       return;
     }
 
+    _selfClose = true;
+
     await ipClient.close();
+    ipClient.destroy();
 
     await stopReceive();
 
@@ -41,7 +48,7 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
   }
 
   @override
-  Future<void> sendAsync(Uint8List dataBuffer) async {
+  Future sendAsync(Uint8List dataBuffer) async {
     if (ipClient == null) {
       return;
     }
@@ -52,7 +59,7 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
     return ipClient.flush();
   }
 
-  Future<void> _onReceived(Uint8List receivedBuffer) async {
+  Future _onReceived(Uint8List receivedBuffer) async {
     await mutex.protect(() async {
       tempReceiveBuffer.add(receivedBuffer);
     });
@@ -61,5 +68,12 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
   void _onError(Object er) {
     ipClient.close();
     dispatchDisconnected(this);
+  }
+
+  void _onDone() {
+    if (_selfClose == false) {
+      ipClient.close();
+      dispatchDisconnected(this);
+    }
   }
 }

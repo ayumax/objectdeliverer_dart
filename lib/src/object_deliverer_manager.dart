@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:core';
 import 'dart:typed_data';
-
-import 'package:rxdart/rxdart.dart';
-
 import 'connected_data.dart';
 import 'deliver_data.dart';
 import 'deliveryBox/deliverybox_base.dart';
@@ -17,9 +14,13 @@ class ObjectDelivererManager<T> {
   DeliveryBoxBase<T> _deliveryBox;
   bool _disposedValue = false;
 
-  PublishSubject<ConnectedData> connected = PublishSubject<ConnectedData>();
-  PublishSubject<ConnectedData> disconnected = PublishSubject<ConnectedData>();
-  PublishSubject<DeliverData<T>> receiveData = PublishSubject<DeliverData<T>>();
+  final _connected = StreamController<ConnectedData>.broadcast();
+  final _disconnected = StreamController<ConnectedData>.broadcast();
+  final _receiveData = StreamController<DeliverData<T>>.broadcast();
+
+  Stream<ConnectedData> get connected => _connected.stream;
+  Stream<ConnectedData> get disconnected => _disconnected.stream;
+  Stream<DeliverData<T>> get receiveData => _receiveData.stream;
 
   bool get isConnected => connectedList.isNotEmpty;
 
@@ -27,8 +28,7 @@ class ObjectDelivererManager<T> {
       <ObjectDelivererProtocol>[];
   List<ObjectDelivererProtocol> get connectedList => _connectedList;
 
-  Future<void> startAsync(
-      ObjectDelivererProtocol protocol, PacketRuleBase packetRule,
+  Future startAsync(ObjectDelivererProtocol protocol, PacketRuleBase packetRule,
       [DeliveryBoxBase<T> deliveryBox]) async {
     if (protocol == null || packetRule == null) {
       return;
@@ -40,12 +40,12 @@ class ObjectDelivererManager<T> {
 
     _currentProtocol.connected.listen((ConnectedData x) {
       _connectedList.add(x.target);
-      connected.add(x);
+      _connected.sink.add(x);
     });
 
     _currentProtocol.disconnected.listen((ConnectedData x) {
       _connectedList.remove(x.target);
-      disconnected.add(x);
+      _disconnected.sink.add(x);
     });
 
     _currentProtocol.receiveData.listen((DeliverRawData x) {
@@ -55,7 +55,7 @@ class ObjectDelivererManager<T> {
         data.message = deliveryBox.bufferToMessage(x.buffer);
       }
 
-      receiveData.add(data);
+      _receiveData.sink.add(data);
     });
 
     _connectedList.clear();
@@ -63,7 +63,7 @@ class ObjectDelivererManager<T> {
     return _currentProtocol.startAsync();
   }
 
-  Future<void> sendAsync(Uint8List dataBuffer) async {
+  Future sendAsync(Uint8List dataBuffer) async {
     if (_currentProtocol == null || _disposedValue) {
       return;
     }
@@ -71,7 +71,7 @@ class ObjectDelivererManager<T> {
     return _currentProtocol.sendAsync(dataBuffer);
   }
 
-  Future<void> sendToAsync(
+  Future sendToAsync(
       Uint8List dataBuffer, ObjectDelivererProtocol target) async {
     if (_currentProtocol == null || _disposedValue) {
       return;
@@ -82,7 +82,7 @@ class ObjectDelivererManager<T> {
     }
   }
 
-  Future<void> sendMessageAsync(T message) async {
+  Future sendMessageAsync(T message) async {
     if (_deliveryBox == null) {
       return;
     }
@@ -90,8 +90,7 @@ class ObjectDelivererManager<T> {
     return sendAsync(_deliveryBox.makeSendBuffer(message));
   }
 
-  Future<void> sendToMessageAsync(
-      T message, ObjectDelivererProtocol target) async {
+  Future sendToMessageAsync(T message, ObjectDelivererProtocol target) async {
     if (_deliveryBox == null) {
       return;
     }
@@ -99,9 +98,13 @@ class ObjectDelivererManager<T> {
     return sendToAsync(_deliveryBox.makeSendBuffer(message), target);
   }
 
-  Future<void> close() async {
+  Future close() async {
     if (!_disposedValue) {
       _disposedValue = true;
+
+      await _connected.close();
+      await _disconnected.close();
+      await _receiveData.close();
 
       if (_currentProtocol == null) {
         return;

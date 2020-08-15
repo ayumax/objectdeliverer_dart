@@ -6,7 +6,7 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
   ProtocolTcpIpClient.fromParam(this.ipAddress, this.port,
       {this.autoConnectAfterDisconnect});
 
-  Future<void> _connectTask;
+  Future _connectTask;
 
   String ipAddress = '127.0.0.1';
 
@@ -17,14 +17,15 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
   bool _isSelfClose = false;
 
   @override
-  Future<void> startAsync() async {
+  Future startAsync() async {
     await super.startAsync();
 
-    await _startConnect();
+    // ignore: unawaited_futures
+    _startConnect();
   }
 
   @override
-  Future<void> closeAsync() async {
+  Future closeAsync() async {
     _isSelfClose = true;
 
     await super.closeAsync();
@@ -41,10 +42,10 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
     }
   }
 
-  Future<void> _startConnect() async {
-    await closeAsync();
+  Future _startConnect() async {
+    //await closeAsync();
 
-    Future<void> _connectAsync() async {
+    Future _connectAsync() async {
       _isSelfClose = false;
 
       ipClient = null;
@@ -56,11 +57,13 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
           break;
         } on SocketException {
           // Wait a minute and then try to reconnect.
-          await Future<void>.delayed(const Duration(seconds: 1));
+          await Future.delayed(const Duration(seconds: 1));
         }
       }
     }
 
+    // ignore: join_return_with_assignment
     _connectTask = _connectAsync();
+    return _connectTask;
   }
 }
