@@ -1,13 +1,11 @@
 # objectdeliverer_dart
 
-## NuGet packages
-[https://www.nuget.org/packages/ObjectDeliverer/](https://www.nuget.org/packages/ObjectDeliverer/)
+## pub.dev
+https://pub.dev/packages/objectdeliverer_dart
 
-To install with NuGet, just install the ObjectDeliverer package:
+To install with pub.dev, just install the objectdeliverer_dart package:
 
-```
-Install-Package ObjectDeliverer
-```
+https://pub.dev/packages/objectdeliverer_dart/install
 
 ## Description
 ObjectDeliverer is a data transmission / reception library for dart.
