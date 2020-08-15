@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'protocol_ip_Socket.dart';
+import 'protocol_ip_socket.dart';
 
 class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   ProtocolUdpSocketReceiver.fromParam(this.boundPort);

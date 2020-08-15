@@ -1,4 +1,4 @@
-﻿import 'package:objectdeliverer_dart/src/deliveryBox/utf8string_deliverybox.dart';
+﻿import 'package:objectdeliverer_dart/objectdeliverer_dart.dart';
 import 'package:test/test.dart';
 
 void main() {

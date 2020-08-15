@@ -1,6 +1,5 @@
 ﻿import 'dart:typed_data';
-
-import 'package:objectdeliverer_dart/src/packetrule/packetrule_fixedlength.dart';
+import 'package:objectdeliverer_dart/objectdeliverer_dart.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -3,7 +3,7 @@ import 'dart:core';
 import 'dart:typed_data';
 import 'connected_data.dart';
 import 'deliver_data.dart';
-import 'deliveryBox/deliverybox_base.dart';
+import 'deliverybox/deliverybox_base.dart';
 import 'packetrule/packetrule_base.dart';
 import 'protocol/objectdeliverer_protocol.dart';
 
