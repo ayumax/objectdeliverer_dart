@@ -15,7 +15,7 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   int listenPort;
 
   @override
-  Future startAsync() async {
+  Future start() async {
     _tcpListener = await ServerSocket.bind(InternetAddress.anyIPv4, listenPort)
       ..listen((Socket connectedClientSocket) {
         final clientSocket =
@@ -32,14 +32,14 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   }
 
   @override
-  Future closeAsync() async {
+  Future close() async {
     await _tcpListener.close();
     _tcpListener = null;
 
     final closeTasks = <Future>[];
 
     for (final clientSocket in _connectedSockets) {
-      closeTasks.add(clientSocket.closeAsync());
+      closeTasks.add(clientSocket.close());
     }
 
     _connectedSockets.clear();
@@ -48,11 +48,11 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   }
 
   @override
-  Future sendAsync(Uint8List dataBuffer) {
+  Future send(Uint8List dataBuffer) {
     final sendTasks = <Future>[];
 
     for (final clientSocket in _connectedSockets) {
-      sendTasks.add(clientSocket.sendAsync(dataBuffer));
+      sendTasks.add(clientSocket.send(dataBuffer));
     }
 
     return Future.wait(sendTasks);
@@ -72,7 +72,7 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
     final foundIndex = _connectedSockets.indexOf(protocolTcpIp);
 
     if (foundIndex >= 0) {
-      await protocolTcpIp.closeAsync();
+      await protocolTcpIp.close();
 
       _connectedSockets.removeAt(foundIndex);
 

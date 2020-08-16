@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 Future<bool> waitCounter(bool Function() checkCondition,
     [Duration limitTime = const Duration(seconds: 1)]) {
-  final completer = Completer<bool>(); // Completer<T>を作成する。
+  final completer = Completer<bool>();
 
   Timer onceTimer;
   Timer periodicTimer;
@@ -24,12 +24,12 @@ Future<bool> waitCounter(bool Function() checkCondition,
     }
   });
 
-  return completer.future; // Completerの持つFutureオブジェクトを返す。
+  return completer.future;
 }
 
-Future _testTCPAsync(PacketRuleBase packetRule) async {
+Future _testTCP(PacketRuleBase packetRule) async {
   final client = ProtocolTcpIpClient.fromParam('localhost', 50123,
-      autoConnectAfterDisconnect: false)
+      autoConnectAfterDisconnect: true)
     ..setPacketRule(packetRule.clonePacketRule());
 
   final server = ProtocolTcpIpServer.fromParam(50123)
@@ -39,9 +39,9 @@ Future _testTCPAsync(PacketRuleBase packetRule) async {
     var counter = 2;
     final clientListner = client.connected.listen((x) => counter--);
     final serverListner = server.connected.listen((x) => counter--);
-    await server.startAsync();
+    await server.start();
 
-    await client.startAsync();
+    await client.start();
 
     if (await waitCounter(() => counter == 0) == false) {
       fail('fail');
@@ -63,7 +63,7 @@ Future _testTCPAsync(PacketRuleBase packetRule) async {
     {
       for (var i = 100; i > 0; --i) {
         expected[0] = i;
-        await client.sendAsync(expected);
+        await client.send(expected);
       }
 
       if (await waitCounter(() => counter == 0) == false) {
@@ -85,7 +85,7 @@ Future _testTCPAsync(PacketRuleBase packetRule) async {
     {
       for (var i = 100; i > 0; --i) {
         expected[0] = i;
-        await server.sendAsync(expected);
+        await server.send(expected);
       }
 
       if (await waitCounter(() => counter == 0) == false) {
@@ -99,7 +99,7 @@ Future _testTCPAsync(PacketRuleBase packetRule) async {
   {
     var counter = 1;
     final clientListner = client.disconnected.listen((x) => counter--);
-    await server.closeAsync();
+    await server.close();
 
     if (await waitCounter(() => counter == 0) == false) {
       fail('fail');
@@ -111,7 +111,7 @@ Future _testTCPAsync(PacketRuleBase packetRule) async {
   {
     var counter = 1;
     final clientListner = client.connected.listen((x) => counter--);
-    await server.startAsync();
+    await server.start();
 
     if (await waitCounter(() => counter == 0) == false) {
       fail('fail');
@@ -123,7 +123,7 @@ Future _testTCPAsync(PacketRuleBase packetRule) async {
   {
     var counter = 1;
     final serverListner = server.disconnected.listen((x) => counter--);
-    await client.closeAsync();
+    await client.close();
 
     if (await waitCounter(() => counter == 0) == false) {
       fail('fail');
@@ -132,22 +132,22 @@ Future _testTCPAsync(PacketRuleBase packetRule) async {
     await serverListner.cancel();
   }
 
-  await client.closeAsync();
-  await server.closeAsync();
+  await client.close();
+  await server.close();
 }
 
 void main() {
   group('TCPIP', () {
     test('size body', () async {
-      await _testTCPAsync(PacketRuleSizeBody.fromParam(4));
+      await _testTCP(PacketRuleSizeBody.fromParam(4));
     });
 
     test('fixed size', () async {
-      await _testTCPAsync(PacketRuleFixedLength.fromParam(3));
+      await _testTCP(PacketRuleFixedLength.fromParam(3));
     });
 
     test('terminate', () async {
-      await _testTCPAsync(
+      await _testTCP(
           PacketRuleTerminate.fromParam(Uint8List.fromList([0xEE, 0xFF])));
     });
   });

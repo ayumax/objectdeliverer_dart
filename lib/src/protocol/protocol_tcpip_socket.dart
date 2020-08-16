@@ -29,10 +29,10 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
   bool _selfClose = false;
 
   @override
-  Future startAsync() async {}
+  Future start() async {}
 
   @override
-  Future closeAsync() async {
+  Future close() async {
     if (ipClient == null) {
       return;
     }
@@ -40,7 +40,9 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
     _selfClose = true;
 
     await ipClient.close();
-    ipClient.destroy();
+    if (ipClient != null) {
+      ipClient.destroy();
+    }
 
     await stopReceive();
 
@@ -48,7 +50,7 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
   }
 
   @override
-  Future sendAsync(Uint8List dataBuffer) async {
+  Future send(Uint8List dataBuffer) async {
     if (ipClient == null) {
       return;
     }

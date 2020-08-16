@@ -10,7 +10,7 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   RawDatagramSocket _udpReceiver;
 
   @override
-  Future startAsync() async {
+  Future start() async {
     _udpReceiver =
         await RawDatagramSocket.bind(InternetAddress.anyIPv4, boundPort)
           ..readEventsEnabled = true
@@ -23,7 +23,7 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   }
 
   @override
-  Future closeAsync() async {
+  Future close() async {
     if (_udpReceiver == null) {
       return;
     }
@@ -36,7 +36,7 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   }
 
   @override
-  Future sendAsync(Uint8List dataBuffer) async {
+  Future send(Uint8List dataBuffer) async {
     // no send
   }
 

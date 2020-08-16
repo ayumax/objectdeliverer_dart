@@ -7,6 +7,40 @@ import 'deliverybox/deliverybox_base.dart';
 import 'packetrule/packetrule_base.dart';
 import 'protocol/objectdeliverer_protocol.dart';
 
+/// Communication management class.
+///
+/// Usage:
+///
+///     // Create an ObjectDelivererManager.
+///     final deliverer = ObjectDelivererManager<String>();
+///
+///     // Watching for connection events
+///     deliverer.connected.listen((x) async {
+///      print('connected');
+///
+///     // Sending data to a connected party
+///      await deliverer.send(Uint8List.fromList([0x00, 0x12]));
+///      await deliverer.send(Uint8List.fromList([0x00, 0x12, 0x23]));
+///     });
+///
+///     // Watching for disconnection events.
+///     deliverer.disconnected.listen((x) => print('disconnected'));
+///
+///     // Watching for incoming events
+///     deliverer.receiveData.listen((x) {
+///       print('received buffer length = ${x.buffer.length}');
+///       print('received message = ${x.message}');
+///     });
+///
+///     // Start the ObjectDelivererManager
+///     await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+///         PacketRuleFixedLength.fromParam(10), Utf8StringDeliveryBox());
+///
+///     await Future.delayed(const Duration(milliseconds: 100));
+///
+///     // Close ObjectDelivererManager
+///     await deliverer.close();
+///
 class ObjectDelivererManager<T> {
   ObjectDelivererManager();
 
@@ -18,17 +52,28 @@ class ObjectDelivererManager<T> {
   final _disconnected = StreamController<ConnectedData>.broadcast();
   final _receiveData = StreamController<DeliverData<T>>.broadcast();
 
+  /// Connection start event.
   Stream<ConnectedData> get connected => _connected.stream;
+
+  /// Disconnection event.
   Stream<ConnectedData> get disconnected => _disconnected.stream;
+
+  /// Data reception event.
   Stream<DeliverData<T>> get receiveData => _receiveData.stream;
 
+  /// A flag that indicates whether it is connected
   bool get isConnected => connectedList.isNotEmpty;
 
   final List<ObjectDelivererProtocol> _connectedList =
       <ObjectDelivererProtocol>[];
   List<ObjectDelivererProtocol> get connectedList => _connectedList;
 
-  Future startAsync(ObjectDelivererProtocol protocol, PacketRuleBase packetRule,
+  /// start communication protocol.
+  ///
+  /// [protocol] is Communication protocol.
+  /// [packetRule] is Data division rule.
+  /// [deliveryBox] is Serialization method(optional)
+  Future start(ObjectDelivererProtocol protocol, PacketRuleBase packetRule,
       [DeliveryBoxBase<T> deliveryBox]) async {
     if (protocol == null || packetRule == null) {
       return;
@@ -60,44 +105,53 @@ class ObjectDelivererManager<T> {
 
     _connectedList.clear();
 
-    return _currentProtocol.startAsync();
+    return _currentProtocol.start();
   }
 
-  Future sendAsync(Uint8List dataBuffer) async {
+  /// send the data to the connection destination.
+  ///
+  /// [dataBuffer] is transmission data.
+  Future send(Uint8List dataBuffer) async {
     if (_currentProtocol == null || _disposedValue) {
       return;
     }
 
-    return _currentProtocol.sendAsync(dataBuffer);
+    return _currentProtocol.send(dataBuffer);
   }
 
-  Future sendToAsync(
-      Uint8List dataBuffer, ObjectDelivererProtocol target) async {
+  /// specify the destination and send the data to the connection destination.
+  ///
+  /// [dataBuffer] is transmission data.
+  /// [target] is the destination.
+  Future sendTo(Uint8List dataBuffer, ObjectDelivererProtocol target) async {
     if (_currentProtocol == null || _disposedValue) {
       return;
     }
 
     if (target != null) {
-      return target.sendAsync(dataBuffer);
+      return target.send(dataBuffer);
     }
   }
 
-  Future sendMessageAsync(T message) async {
+  /// Convert message to byte buffer and send (DeliveryBox must be used).
+  Future sendMessage(T message) async {
     if (_deliveryBox == null) {
       return;
     }
 
-    return sendAsync(_deliveryBox.makeSendBuffer(message));
+    return send(_deliveryBox.makeSendBuffer(message));
   }
 
-  Future sendToMessageAsync(T message, ObjectDelivererProtocol target) async {
+  /// Specify destination and convert message to byte buffer and send (use of DeliveryBox is required).
+  Future sendToMessage(T message, ObjectDelivererProtocol target) async {
     if (_deliveryBox == null) {
       return;
     }
 
-    return sendToAsync(_deliveryBox.makeSendBuffer(message), target);
+    return sendTo(_deliveryBox.makeSendBuffer(message), target);
   }
 
+  /// close communication protocol.
   Future close() async {
     if (!_disposedValue) {
       _disposedValue = true;
@@ -110,7 +164,7 @@ class ObjectDelivererManager<T> {
         return;
       }
 
-      await _currentProtocol.closeAsync();
+      await _currentProtocol.close();
 
       await _currentProtocol.dispose();
 

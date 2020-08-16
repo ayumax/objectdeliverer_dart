@@ -16,24 +16,24 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
   bool _isSelfClose = false;
 
   @override
-  Future startAsync() async {
-    await super.startAsync();
+  Future start() async {
+    await super.start();
 
     // ignore: unawaited_futures
     _startConnect();
   }
 
   @override
-  Future closeAsync() async {
+  Future close() async {
     _isSelfClose = true;
 
-    await super.closeAsync();
+    await super.close();
 
     await _connectTask;
   }
 
   Future _startConnect() async {
-    Future _connectAsync() async {
+    Future _connect() async {
       _isSelfClose = false;
 
       ipClient = null;
@@ -50,7 +50,7 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
       }
     }
 
-    _connectTask = _connectAsync();
+    _connectTask = _connect();
     return _connectTask;
   }
 

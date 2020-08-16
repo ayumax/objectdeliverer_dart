@@ -50,7 +50,7 @@ The following rules are available for built-in split rules of transmitted and re
 
 
 # Quick Start
-Create ObjectDelivererManager and create various communication paths by passing "Communication Protocol", "Packet Split Rule" and "Serialization Method" to the arguments of StartAsync method.
+Create ObjectDelivererManager and create various communication paths by passing "Communication Protocol", "Packet Split Rule" and "Serialization Method" to the arguments of Start method.
 
 ```cs
   // Create an ObjectDelivererManager
@@ -61,8 +61,8 @@ Create ObjectDelivererManager and create various communication paths by passing 
     print('connected');
 
     // Sending data to a connected party
-    await deliverer.sendAsync(Uint8List.fromList([0x00, 0x12]));
-    await deliverer.sendAsync(Uint8List.fromList([0x00, 0x12, 0x23]));
+    await deliverer.send(Uint8List.fromList([0x00, 0x12]));
+    await deliverer.send(Uint8List.fromList([0x00, 0x12, 0x23]));
   });
 
   // Watching for disconnection events
@@ -75,7 +75,7 @@ Create ObjectDelivererManager and create various communication paths by passing 
   });
 
   // Start the ObjectDelivererManager
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10), Utf8StringDeliveryBox());
 
   await Future.delayed(const Duration(milliseconds: 100));
@@ -86,24 +86,24 @@ Create ObjectDelivererManager and create various communication paths by passing 
 ```
 
 # Change communication protocol
-You can switch to various communication protocols by changing the Protocol passed to the StartAsync method.
+You can switch to various communication protocols by changing the Protocol passed to the start method.
 
 ```cs
   // TCP/IP Client
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
 
   // TCP/IP Server
-  await deliverer.startAsync(
+  await deliverer.start(
       ProtocolTcpIpServer.fromParam(9013), PacketRuleFixedLength.fromParam(10));
 
   // UDP Sender
-  await deliverer.startAsync(
+  await deliverer.start(
       ProtocolUdpSocketSender.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
 
   // UDP Receiver
-  await deliverer.startAsync(ProtocolUdpSocketReceiver.fromParam(9013),
+  await deliverer.start(ProtocolUdpSocketReceiver.fromParam(9013),
       PacketRuleFixedLength.fromParam(10));
 
 ```
@@ -113,20 +113,20 @@ You can easily change the packet splitting rule.
 
 ```cs
   // FixedSize
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
 
   // Header(BodySize) + Body
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleSizeBody.fromParam(4, sizeBufferEndian: Endian.big));
 
 
   // Split by terminal symbol
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleTerminate.fromParam(Uint8List.fromList([0xFE, 0xFF])));
 
   // Nodivision
-  await deliverer.startAsync(
+  await deliverer.start(
       ProtocolTcpIpClient.fromParam('127.0.0.1', 9013), PacketRuleNodivision());
 ```
 
@@ -137,12 +137,12 @@ Using DeliveryBox enables sending and receiving of non-binary data (character st
   // UTF-8 string
   final deliverer = ObjectDelivererManager<String>();
 
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10), Utf8StringDeliveryBox());
 
   deliverer.receiveData.listen((x) => print(x.message));
 
-  await deliverer.sendMessageAsync('ABCDEFG');
+  await deliverer.sendMessage('ABCDEFG');
 ```
 
 ```cs
@@ -157,6 +157,7 @@ class SampleObj extends IJsonSerializable {
   Map<String, dynamic> toJson() => {'prop': prop, 'stringProp': stringProp};
 }
 
+  // Register the deserialization function of object in advance
   IJsonSerializable.addMakeInstanceFunction(SampleObj, (json) {
     final obj = SampleObj()
       ..prop = json['prop'] as int
@@ -166,7 +167,7 @@ class SampleObj extends IJsonSerializable {
   
   final deliverer = ObjectDelivererManager<SampleObj>();
 
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10), ObjectJsonDeliveryBox<SampleObj>());
 
   deliverer.receiveData.listen((x) => print(x.message.hoge()));
@@ -174,6 +175,6 @@ class SampleObj extends IJsonSerializable {
   final sampleObj = SampleObj()
     ..prop = 1
     ..stringProp = 'abc';
-  await deliverer.sendMessageAsync(sampleObj);
+  await deliverer.sendMessage(sampleObj);
 
 ```
