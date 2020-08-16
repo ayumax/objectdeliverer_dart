@@ -19,11 +19,11 @@ abstract class ObjectDelivererProtocol {
 
   PacketRuleBase packetRule = PacketRuleNodivision();
 
-  Future startAsync();
+  Future start();
 
-  Future closeAsync();
+  Future close();
 
-  Future sendAsync(Uint8List dataBuffer);
+  Future send(Uint8List dataBuffer);
 
   void setPacketRule(PacketRuleBase packetRule) {
     this.packetRule = packetRule;
@@ -36,7 +36,7 @@ abstract class ObjectDelivererProtocol {
     await _receiveData.close();
 
     if (!_disposedValue) {
-      await closeAsync();
+      await close();
 
       _disposedValue = true;
     }

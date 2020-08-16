@@ -24,14 +24,14 @@ class ProtocolUdpSocketSender extends ObjectDelivererProtocol {
   RawDatagramSocket _udpSender;
 
   @override
-  Future startAsync() async {
+  Future start() async {
     _udpSender = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
 
     dispatchConnected(this);
   }
 
   @override
-  Future closeAsync() async {
+  Future close() async {
     if (_udpSender == null) {
       return;
     }
@@ -42,7 +42,7 @@ class ProtocolUdpSocketSender extends ObjectDelivererProtocol {
   }
 
   @override
-  Future sendAsync(Uint8List dataBuffer) async {
+  Future send(Uint8List dataBuffer) async {
     if (_udpSender == null) {
       return;
     }

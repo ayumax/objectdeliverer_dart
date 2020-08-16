@@ -28,7 +28,7 @@ Future<bool> waitCounter(bool Function() checkCondition,
   return completer.future; // Completerの持つFutureオブジェクトを返す。
 }
 
-Future _testUDPAsync(PacketRuleBase packetRule) async {
+Future _testUDP(PacketRuleBase packetRule) async {
   final receiver = ProtocolUdpSocketReceiver.fromParam(50123)
     ..setPacketRule(packetRule.clonePacketRule());
 
@@ -39,9 +39,9 @@ Future _testUDPAsync(PacketRuleBase packetRule) async {
     var counter = 2;
     final clientListner = receiver.connected.listen((x) => counter--);
     final serverListner = sender.connected.listen((x) => counter--);
-    await receiver.startAsync();
+    await receiver.start();
 
-    await sender.startAsync();
+    await sender.start();
 
     if (await waitCounter(() => counter == 0) == false) {
       fail('fail');
@@ -63,7 +63,7 @@ Future _testUDPAsync(PacketRuleBase packetRule) async {
     {
       for (var i = 100; i > 0; --i) {
         expected[0] = i;
-        await sender.sendAsync(expected);
+        await sender.send(expected);
         await waitCounter(() => counter == i - 1);
       }
 
@@ -76,26 +76,26 @@ Future _testUDPAsync(PacketRuleBase packetRule) async {
     await serverListner.cancel();
   }
 
-  await receiver.closeAsync();
-  await sender.closeAsync();
+  await receiver.close();
+  await sender.close();
 }
 
 void main() {
   group('UDP', () {
     test('size body', () async {
-      await _testUDPAsync(PacketRuleSizeBody.fromParam(4));
+      await _testUDP(PacketRuleSizeBody.fromParam(4));
     });
 
     test('fixed size', () async {
-      await _testUDPAsync(PacketRuleFixedLength.fromParam(3));
+      await _testUDP(PacketRuleFixedLength.fromParam(3));
     });
 
     test('no division', () async {
-      await _testUDPAsync(PacketRuleNodivision());
+      await _testUDP(PacketRuleNodivision());
     });
 
     test('terminate', () async {
-      await _testUDPAsync(
+      await _testUDP(
           PacketRuleTerminate.fromParam(Uint8List.fromList([0xEE, 0xFF])));
     });
   });

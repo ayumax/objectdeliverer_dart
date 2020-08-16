@@ -7,6 +7,11 @@ abstract class IJsonSerializable {
       _makeInstanceFuncMap =
       <Type, IJsonSerializable Function(Map<String, dynamic>)>{};
 
+  /// Registration of object generation method used when deserializing
+  /// from json
+  ///
+  /// Please register the instance generation method by using the type [type]
+  /// of the target class (T) as a key.
   static void addMakeInstanceFunction(Type type,
       IJsonSerializable Function(Map<String, dynamic>) makeInstanceFunction) {
     _makeInstanceFuncMap[type] = makeInstanceFunction;
@@ -20,6 +25,7 @@ abstract class IJsonSerializable {
     return _makeInstanceFuncMap[type](json);
   }
 
+  /// Method to make an object json.
   Map<String, dynamic> toJson();
 }
 

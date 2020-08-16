@@ -14,7 +14,7 @@ abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
 
   Future stopReceive() async {
     if (_receiveTask != null) {
-      await _receiveTask.stopAsync();
+      await _receiveTask.stop();
 
       _receiveTask = null;
     }

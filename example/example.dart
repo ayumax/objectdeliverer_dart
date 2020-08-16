@@ -11,8 +11,8 @@ Future quickStart() async {
     print('connected');
 
     // Sending data to a connected party
-    await deliverer.sendAsync(Uint8List.fromList([0x00, 0x12]));
-    await deliverer.sendAsync(Uint8List.fromList([0x00, 0x12, 0x23]));
+    await deliverer.send(Uint8List.fromList([0x00, 0x12]));
+    await deliverer.send(Uint8List.fromList([0x00, 0x12, 0x23]));
   });
 
   // Watching for disconnection events
@@ -25,7 +25,7 @@ Future quickStart() async {
   });
 
   // Start the ObjectDelivererManager
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10), Utf8StringDeliveryBox());
 
   await Future.delayed(const Duration(milliseconds: 100));
@@ -38,26 +38,25 @@ Future changeCommunicationProtocol() async {
   final deliverer = ObjectDelivererManager<String>();
 
   // TCP/IP Client
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
 
   await deliverer.close();
 
   // TCP/IP Server
-  await deliverer.startAsync(
+  await deliverer.start(
       ProtocolTcpIpServer.fromParam(9013), PacketRuleFixedLength.fromParam(10));
 
   await deliverer.close();
 
   // UDP Sender
-  await deliverer.startAsync(
-      ProtocolUdpSocketSender.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolUdpSocketSender.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
 
   await deliverer.close();
 
   // UDP Receiver
-  await deliverer.startAsync(ProtocolUdpSocketReceiver.fromParam(9013),
+  await deliverer.start(ProtocolUdpSocketReceiver.fromParam(9013),
       PacketRuleFixedLength.fromParam(10));
 
   await deliverer.close();
@@ -67,25 +66,25 @@ Future changeOfDataDivisionRule() async {
   final deliverer = ObjectDelivererManager<String>();
 
   // FixedSize
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10));
 
   await deliverer.close();
 
   // Header(BodySize) + Body
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleSizeBody.fromParam(4, sizeBufferEndian: Endian.big));
 
   await deliverer.close();
 
   // Split by terminal symbol
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleTerminate.fromParam(Uint8List.fromList([0xFE, 0xFF])));
 
   await deliverer.close();
 
   // Nodivision
-  await deliverer.startAsync(
+  await deliverer.start(
       ProtocolTcpIpClient.fromParam('127.0.0.1', 9013), PacketRuleNodivision());
 
   await deliverer.close();
@@ -95,12 +94,12 @@ Future changeOfSerializationMethodString() async {
   // UTF-8 string
   final deliverer = ObjectDelivererManager<String>();
 
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10), Utf8StringDeliveryBox());
 
   deliverer.receiveData.listen((x) => print(x.message));
 
-  await deliverer.sendMessageAsync('ABCDEFG');
+  await deliverer.sendMessage('ABCDEFG');
 
   await Future.delayed(const Duration(milliseconds: 100));
 
@@ -128,7 +127,7 @@ Future changeOfSerializationMethodObject() async {
 
   final deliverer = ObjectDelivererManager<SampleObj>();
 
-  await deliverer.startAsync(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
+  await deliverer.start(ProtocolTcpIpClient.fromParam('127.0.0.1', 9013),
       PacketRuleFixedLength.fromParam(10), ObjectJsonDeliveryBox<SampleObj>());
 
   deliverer.receiveData.listen((x) => print(x.message.hoge()));
@@ -136,7 +135,7 @@ Future changeOfSerializationMethodObject() async {
   final sampleObj = SampleObj()
     ..prop = 1
     ..stringProp = 'abc';
-  await deliverer.sendMessageAsync(sampleObj);
+  await deliverer.sendMessage(sampleObj);
 
   await Future.delayed(const Duration(milliseconds: 100));
 
