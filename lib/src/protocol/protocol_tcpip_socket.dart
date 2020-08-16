@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'protocol_ip_Socket.dart';
+import 'protocol_ip_socket.dart';
 
 class ProtocolTcpIpSocket extends ProtocolIpSocket {
   ProtocolTcpIpSocket();
