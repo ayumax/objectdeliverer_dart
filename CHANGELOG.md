@@ -1,4 +1,4 @@
-## 0.0.3-beta
+## 0.0.4-beta
 * Corrected all folder names to lower case.
 
 ## 0.0.2-beta
