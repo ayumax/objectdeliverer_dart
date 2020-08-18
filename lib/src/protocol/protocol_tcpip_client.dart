@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:universal_io/io.dart';
 import 'protocol_tcpip_socket.dart';
 
 class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
