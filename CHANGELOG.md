@@ -1,3 +1,6 @@
+## 0.0.5-beta
+* changed dart:io to universal_io.
+
 ## 0.0.4-beta
 * Corrected all folder names to lower case.
 
