@@ -1,4 +1,7 @@
 # objectdeliverer_dart
+![pub](https://github.com/ayumax/objectdeliverer_dart/workflows/pub/badge.svg?branch=master)
+
+![tests](https://github.com/ayumax/objectdeliverer_dart/workflows/tests/badge.svg?branch=devel)
 
 ## pub.dev
 https://pub.dev/packages/objectdeliverer_dart
