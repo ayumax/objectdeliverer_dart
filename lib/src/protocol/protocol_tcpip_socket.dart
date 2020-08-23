@@ -16,7 +16,11 @@ class ProtocolTcpIpSocket extends ProtocolIpSocket {
   }
 
   Future startConnect(String ipAddress, int port) async {
-    ipClient = await Socket.connect(ipAddress, port)
+    final ipAddressValue = ipAddress.toLowerCase() == 'localhost'
+        ? InternetAddress.loopbackIPv4
+        : ipAddress;
+
+    ipClient = await Socket.connect(ipAddressValue, port)
       ..listen(_onReceived,
           onError: _onError, onDone: onDone, cancelOnError: true);
 

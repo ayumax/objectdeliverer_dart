@@ -75,7 +75,7 @@ class ObjectDelivererManager<T> {
   /// [deliveryBox] is Serialization method(optional)
   Future start(ObjectDelivererProtocol protocol, PacketRuleBase packetRule,
       [DeliveryBoxBase<T> deliveryBox]) async {
-    if (protocol == null || packetRule == null) {
+    if (_disposedValue || protocol == null || packetRule == null) {
       return;
     }
 
@@ -135,7 +135,7 @@ class ObjectDelivererManager<T> {
 
   /// Convert message to byte buffer and send (DeliveryBox must be used).
   Future sendMessage(T message) async {
-    if (_deliveryBox == null) {
+    if (_disposedValue || _deliveryBox == null) {
       return;
     }
 
@@ -144,7 +144,7 @@ class ObjectDelivererManager<T> {
 
   /// Specify destination and convert message to byte buffer and send (use of DeliveryBox is required).
   Future sendToMessage(T message, ObjectDelivererProtocol target) async {
-    if (_deliveryBox == null) {
+    if (_disposedValue || _deliveryBox == null) {
       return;
     }
 
