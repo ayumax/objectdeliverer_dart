@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'objectdeliverer_protocol.dart';
 
+/// /// UDP Sender protocol
 class ProtocolUdpSocketSender extends ObjectDelivererProtocol {
   ProtocolUdpSocketSender.fromParam(
       String destinationIpAddress, this.destinationPort) {
