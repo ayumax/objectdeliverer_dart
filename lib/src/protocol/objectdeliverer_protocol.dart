@@ -31,11 +31,11 @@ abstract class ObjectDelivererProtocol {
   }
 
   Future dispose() async {
-    await _connected.close();
-    await _disconnected.close();
-    await _receiveData.close();
-
     if (!_disposedValue) {
+      await _connected.close();
+      await _disconnected.close();
+      await _receiveData.close();
+
       await close();
 
       _disposedValue = true;
@@ -43,14 +43,20 @@ abstract class ObjectDelivererProtocol {
   }
 
   void dispatchConnected(ObjectDelivererProtocol delivererProtocol) {
-    _connected.sink.add(ConnectedData.fromTarget(delivererProtocol));
+    if (_disposedValue == false) {
+      _connected.sink.add(ConnectedData.fromTarget(delivererProtocol));
+    }
   }
 
   void dispatchDisconnected(ObjectDelivererProtocol delivererProtocol) {
-    _disconnected.sink.add(ConnectedData.fromTarget(delivererProtocol));
+    if (_disposedValue == false) {
+      _disconnected.sink.add(ConnectedData.fromTarget(delivererProtocol));
+    }
   }
 
   void dispatchReceiveData(DeliverRawData deliverData) {
-    _receiveData.sink.add(deliverData);
+    if (_disposedValue == false) {
+      _receiveData.sink.add(deliverData);
+    }
   }
 }

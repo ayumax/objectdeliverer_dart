@@ -1,3 +1,6 @@
+## 0.0.6-beta
+* Minor modification
+
 ## 0.0.5-beta
 * changed dart:io to universal_io.
 
