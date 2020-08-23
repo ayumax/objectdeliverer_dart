@@ -1,6 +1,7 @@
 ﻿import 'dart:math';
 import 'dart:typed_data';
 
+/// Buffer with size adjustment function
 class GrowBuffer {
   GrowBuffer({int initialSize = 0, int packetSize = 1024}) {
     _packetSize = packetSize;

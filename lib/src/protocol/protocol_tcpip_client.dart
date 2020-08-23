@@ -1,6 +1,7 @@
 import 'package:universal_io/io.dart';
 import 'protocol_tcpip_socket.dart';
 
+/// TCP/IP Client protocol
 class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
   ProtocolTcpIpClient.fromParam(this.ipAddress, this.port,
       {this.autoConnectAfterDisconnect});

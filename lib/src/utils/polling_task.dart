@@ -1,5 +1,6 @@
 ﻿import 'package:async/async.dart';
 
+/// Polling processing class
 class PollingTask {
   PollingTask.fromAction(Future<bool> Function() action) {
     _isCancel = false;
@@ -11,6 +12,7 @@ class PollingTask {
   CancelableOperation<void> _pollingTask;
   bool _isCancel = false;
 
+  /// stop the polling
   Future stop() async {
     if (_pollingTask == null) {
       return;
@@ -21,6 +23,7 @@ class PollingTask {
     await _pollingTask.valueOrCancellation();
   }
 
+  /// Polling process
   Future run(Future<bool> Function() action) async {
     while (_isCancel == false) {
       if (await action() == false) {
