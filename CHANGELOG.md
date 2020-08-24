@@ -1,3 +1,6 @@
+## 0.0.8-beta
+* Fixed a bug that the standby of tcp/ip server was localhost
+ 
 ## 0.0.6-beta
 * Minor modification
 
