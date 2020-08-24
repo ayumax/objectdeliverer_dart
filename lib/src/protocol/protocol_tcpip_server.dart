@@ -17,20 +17,19 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
 
   @override
   Future start() async {
-    _tcpListener =
-        await ServerSocket.bind(InternetAddress.loopbackIPv4, listenPort)
-          ..listen((Socket connectedClientSocket) {
-            final clientSocket =
-                ProtocolTcpIpSocket.fromConnectedSocket(connectedClientSocket)
-                  ..disconnected.listen(
-                      (ConnectedData x) => _clientSocketDisconnected(x.target))
-                  ..receiveData.listen(dispatchReceiveData)
-                  ..setPacketRule(packetRule.clonePacketRule());
+    _tcpListener = await ServerSocket.bind(InternetAddress.anyIPv4, listenPort)
+      ..listen((Socket connectedClientSocket) {
+        final clientSocket =
+            ProtocolTcpIpSocket.fromConnectedSocket(connectedClientSocket)
+              ..disconnected.listen(
+                  (ConnectedData x) => _clientSocketDisconnected(x.target))
+              ..receiveData.listen(dispatchReceiveData)
+              ..setPacketRule(packetRule.clonePacketRule());
 
-            _connectedSockets.add(clientSocket);
+        _connectedSockets.add(clientSocket);
 
-            dispatchConnected(clientSocket);
-          });
+        dispatchConnected(clientSocket);
+      });
   }
 
   @override
