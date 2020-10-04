@@ -82,19 +82,10 @@ Future _testUDP(PacketRuleBase packetRule) async {
 
 void main() {
   group('UDP', () {
-    test('size body', () async {
+    test('protocols', () async {
       await _testUDP(PacketRuleSizeBody.fromParam(4));
-    });
-
-    test('fixed size', () async {
       await _testUDP(PacketRuleFixedLength.fromParam(3));
-    });
-
-    test('no division', () async {
       await _testUDP(PacketRuleNodivision());
-    });
-
-    test('terminate', () async {
       await _testUDP(
           PacketRuleTerminate.fromParam(Uint8List.fromList([0xEE, 0xFF])));
     });
