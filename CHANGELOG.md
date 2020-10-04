@@ -1,3 +1,6 @@
+## 0.0.9-beta
+* add WebSocket Protocol.
+
 ## 0.0.8-beta
 * Fixed a bug that the standby of tcp/ip server was localhost
  
