@@ -16,4 +16,7 @@ export 'src/protocol/protocol_tcpip_client.dart';
 export 'src/protocol/protocol_tcpip_server.dart';
 export 'src/protocol/protocol_udp_socket_receiver.dart';
 export 'src/protocol/protocol_udp_socket_sender.dart';
+export 'src/protocol/protocol_websocket.dart';
+export 'src/protocol/protocol_websocket_client.dart';
+export 'src/protocol/protocol_websocket_server.dart';
 export 'src/utils/grow_buffer.dart';

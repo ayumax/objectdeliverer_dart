@@ -8,6 +8,7 @@ import 'packetrule/packetrule_sizebody_tests.dart' as packetrule_sizebody;
 import 'packetrule/packetrule_terminate_tests.dart' as packetrule_terminate;
 import 'protocol/protocol_tcpip_client_tests.dart' as protocol_tcpip_client;
 import 'protocol/protocol_udp_tests.dart' as protocol_udp;
+import 'protocol/protocol_websocket_tests.dart' as protocol_websocket;
 import 'utils/grow_buffer_tests.dart' as grow_buffer;
 
 void main() {
@@ -20,4 +21,5 @@ void main() {
   grow_buffer.main();
   protocol_tcpip_client.main();
   protocol_udp.main();
+  protocol_websocket.main();
 }
