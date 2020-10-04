@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 Future<bool> waitCounter(bool Function() checkCondition,
     [Duration limitTime = const Duration(seconds: 1)]) {
-  final completer = Completer<bool>();
+  final completer = Completer<bool>(); // Completer<T>を作成する。
 
   Timer onceTimer;
   Timer periodicTimer;
@@ -24,15 +24,15 @@ Future<bool> waitCounter(bool Function() checkCondition,
     }
   });
 
-  return completer.future;
+  return completer.future; // Completerの持つFutureオブジェクトを返す。
 }
 
-Future _testTCP(PacketRuleBase packetRule) async {
-  final client = ProtocolTcpIpClient.fromParam('127.0.0.1', 53129,
+Future _testWebSocket(PacketRuleBase packetRule) async {
+  final client = ProtocolWebSocketClient.fromParam('ws://127.0.0.1:53129/ws',
       autoConnectAfterDisconnect: true)
     ..setPacketRule(packetRule.clonePacketRule());
 
-  final server = ProtocolTcpIpServer.fromParam(53129)
+  final server = ProtocolWebSocketServer.fromParam(53129)
     ..setPacketRule(packetRule.clonePacketRule());
 
   {
@@ -64,9 +64,11 @@ Future _testTCP(PacketRuleBase packetRule) async {
       for (var i = 100; i > 0; --i) {
         expected[0] = i;
         await client.send(expected);
+        await waitCounter(() => counter == i - 1);
       }
 
-      if (await waitCounter(() => counter == 0) == false) {
+      if (await waitCounter(() => counter == 0, const Duration(seconds: 10)) ==
+          false) {
         fail('fail');
       }
     }
@@ -86,9 +88,11 @@ Future _testTCP(PacketRuleBase packetRule) async {
       for (var i = 100; i > 0; --i) {
         expected[0] = i;
         await server.send(expected);
+        await waitCounter(() => counter == i - 1);
       }
 
-      if (await waitCounter(() => counter == 0) == false) {
+      if (await waitCounter(() => counter == 0, const Duration(seconds: 10)) ==
+          false) {
         fail('fail');
       }
     }
@@ -137,11 +141,11 @@ Future _testTCP(PacketRuleBase packetRule) async {
 }
 
 void main() {
-  group('TCPIP', () {
+  group('WebSocket', () {
     test('protocols', () async {
-      await _testTCP(PacketRuleSizeBody.fromParam(4));
-      await _testTCP(PacketRuleFixedLength.fromParam(3));
-      await _testTCP(
+      await _testWebSocket(PacketRuleSizeBody.fromParam(4));
+      await _testWebSocket(PacketRuleFixedLength.fromParam(3));
+      await _testWebSocket(
           PacketRuleTerminate.fromParam(Uint8List.fromList([0xEE, 0xFF])));
     });
   });
