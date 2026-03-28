@@ -6,6 +6,9 @@ import 'packetrule/packetrule_fixedlength_tests.dart' as packetrule_fixedlength;
 import 'packetrule/packetrule_nodivision_tests.dart' as packetrule_nodivision;
 import 'packetrule/packetrule_sizebody_tests.dart' as packetrule_sizebody;
 import 'packetrule/packetrule_terminate_tests.dart' as packetrule_terminate;
+import 'protocol/protocol_log_writer_reader_tests.dart'
+    as protocol_log_writer_reader;
+import 'protocol/protocol_reflection_tests.dart' as protocol_reflection;
 import 'protocol/protocol_tcpip_client_tests.dart' as protocol_tcpip_client;
 import 'protocol/protocol_udp_tests.dart' as protocol_udp;
 import 'protocol/protocol_websocket_tests.dart' as protocol_websocket;
@@ -19,6 +22,8 @@ void main() {
   packetrule_sizebody.main();
   packetrule_terminate.main();
   grow_buffer.main();
+  protocol_reflection.main();
+  protocol_log_writer_reader.main();
   protocol_tcpip_client.main();
   protocol_udp.main();
   protocol_websocket.main();

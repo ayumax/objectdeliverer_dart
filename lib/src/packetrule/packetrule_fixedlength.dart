@@ -21,6 +21,7 @@ class PacketRuleFixedLength extends PacketRuleBase {
   @override
   Uint8List makeSendPacket(Uint8List bodyBuffer) {
     bufferForSend.clear();
+    bufferForSend.setBufferSize(fixedSize);
 
     final sendPacketSpan = Uint8List.fromList(
         bodyBuffer.take(min(bodyBuffer.length, fixedSize)).toList());

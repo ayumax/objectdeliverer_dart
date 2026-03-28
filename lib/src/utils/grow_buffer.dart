@@ -72,5 +72,6 @@ class GrowBuffer {
 
   void clear() {
     _innerBuffer.fillRange(0, _innerBuffer.length, 0);
+    _length = 0;
   }
 }

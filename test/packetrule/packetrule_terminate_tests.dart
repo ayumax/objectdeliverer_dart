@@ -87,5 +87,36 @@ void main() {
 
       await expectLater(count, 2);
     });
+
+    test('When the packet is split across multiple calls', () async {
+      final packetRule =
+          PacketRuleTerminate.fromParam(Uint8List.fromList([0xFE, 0xEF]))
+            ..initialize();
+
+      var receivedCount = 0;
+
+      final expected = Uint8List.fromList(List.generate(10, (index) => index));
+
+      final actual0 = packetRule.makeReceivedPacket(expected).toList();
+      await expectLater(actual0.length, 0);
+
+      final remaining = Uint8List.fromList(
+        packetRule.terminate +
+            List.generate(10, (index) => 20 + index) +
+            packetRule.terminate,
+      );
+
+      final actual1 = packetRule.makeReceivedPacket(remaining).toList();
+
+      for (final packet in actual1) {
+        receivedCount++;
+        await expectLater(packet.length, 10);
+        if (receivedCount == 1) {
+          await expectLater(packet, expected);
+        }
+      }
+
+      await expectLater(receivedCount, 2);
+    });
   });
 }

@@ -39,6 +39,10 @@ void main() {
       await expectLater(buffer.memoryBuffer[0], 1);
       await expectLater(buffer.memoryBuffer[1], 0xEE);
       await expectLater(buffer.memoryBuffer[2], 0xFF);
+
+      buffer.clear();
+      await expectLater(buffer.length, 0);
+      await expectLater(buffer.innerBufferSize, packetSize * 2);
     });
   });
 }
