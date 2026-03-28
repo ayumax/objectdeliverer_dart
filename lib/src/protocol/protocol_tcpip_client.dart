@@ -1,31 +1,32 @@
 import 'package:universal_io/io.dart';
 import 'protocol_tcpip_socket.dart';
 
-/// TCP/IP Client protocol
 class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
-  ProtocolTcpIpClient.fromParam(this.ipAddress, this.port,
-      {this.autoConnectAfterDisconnect});
+  ProtocolTcpIpClient.fromParam(
+    this.ipAddress,
+    this.port, {
+    this.autoConnectAfterDisconnect = false,
+  });
 
-  Future _connectTask;
+  Future<void>? _connectTask;
 
   String ipAddress = '127.0.0.1';
 
   int port;
 
-  bool autoConnectAfterDisconnect = false;
+  bool autoConnectAfterDisconnect;
 
   bool _isSelfClose = false;
 
   @override
-  Future start() async {
+  Future<void> start() async {
     await super.start();
 
-    // ignore: unawaited_futures
     _startConnect();
   }
 
   @override
-  Future close() async {
+  Future<void> close() async {
     _isSelfClose = true;
 
     await super.close();
@@ -33,8 +34,8 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
     await _connectTask;
   }
 
-  Future _startConnect() async {
-    Future _connect() async {
+  Future<void> _startConnect() async {
+    Future<void> connect() async {
       _isSelfClose = false;
 
       ipClient = null;
@@ -45,14 +46,12 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
 
           break;
         } on SocketException {
-          // Wait a minute and then try to reconnect.
-          await Future.delayed(const Duration(seconds: 1));
+          await Future<void>.delayed(const Duration(seconds: 1));
         }
       }
     }
 
-    _connectTask = _connect();
-    return _connectTask;
+    _connectTask = connect();
   }
 
   @override
@@ -60,7 +59,6 @@ class ProtocolTcpIpClient extends ProtocolTcpIpSocket {
     super.onDone();
 
     if (_isSelfClose == false && autoConnectAfterDisconnect) {
-      // ignore: unawaited_futures
       _startConnect();
     }
   }

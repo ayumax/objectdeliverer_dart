@@ -7,25 +7,24 @@ abstract class IJsonSerializable {
       _makeInstanceFuncMap =
       <Type, IJsonSerializable Function(Map<String, dynamic>)>{};
 
-  /// Registration of object generation method used when deserializing
-  /// from json
-  ///
-  /// Please register the instance generation method by using the type [type]
-  /// of the target class (T) as a key.
-  static void addMakeInstanceFunction(Type type,
-      IJsonSerializable Function(Map<String, dynamic>) makeInstanceFunction) {
+  static void addMakeInstanceFunction(
+    Type type,
+    IJsonSerializable Function(Map<String, dynamic>) makeInstanceFunction,
+  ) {
     _makeInstanceFuncMap[type] = makeInstanceFunction;
   }
 
-  static IJsonSerializable makeInstance(Type type, Map<String, dynamic> json) {
+  static IJsonSerializable? makeInstance(
+    Type type,
+    Map<String, dynamic> json,
+  ) {
     if (_makeInstanceFuncMap.containsKey(type) == false) {
       return null;
     }
 
-    return _makeInstanceFuncMap[type](json);
+    return _makeInstanceFuncMap[type]!(json);
   }
 
-  /// Method to make an object json.
   Map<String, dynamic> toJson();
 }
 
@@ -33,22 +32,21 @@ class ObjectJsonDeliveryBox<T extends IJsonSerializable>
     extends DeliveryBoxBase<T> {
   @override
   Uint8List makeSendBuffer(T message) =>
-      utf8.encode(jsonEncode(message)) as Uint8List;
+      Uint8List.fromList(utf8.encode(jsonEncode(message)));
 
   @override
-  T bufferToMessage(Uint8List buffer) {
+  T? bufferToMessage(Uint8List buffer) {
     if (buffer.isEmpty) {
       return null;
     }
 
     if (buffer[buffer.length - 1] == 0x00) {
-      // Remove the terminal null
       buffer.removeLast();
     }
 
-    final decordedJson =
+    final decodedJson =
         jsonDecode(utf8.decode(buffer)) as Map<String, dynamic>;
 
-    return IJsonSerializable.makeInstance(T, decordedJson) as T;
+    return IJsonSerializable.makeInstance(T, decodedJson) as T?;
   }
 }

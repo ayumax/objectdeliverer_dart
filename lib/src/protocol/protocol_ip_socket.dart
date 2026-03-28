@@ -12,15 +12,16 @@ abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
     _receiveTask = PollingTask.fromAction(receivedDatas);
   }
 
-  Future stopReceive() async {
-    if (_receiveTask != null) {
-      await _receiveTask.stop();
+  Future<void> stopReceive() async {
+    final task = _receiveTask;
+    if (task != null) {
+      await task.stop();
 
       _receiveTask = null;
     }
   }
 
-  PollingTask _receiveTask;
+  PollingTask? _receiveTask;
 
   GrowBuffer tempReceiveBuffer = GrowBuffer();
 
@@ -33,18 +34,20 @@ abstract class ProtocolIpSocket extends ObjectDelivererProtocol {
 
         if (wantSize > 0) {
           if (tempReceiveBuffer.length < wantSize) {
-            return true;
+            return;
           }
         }
 
-        final receiveSize = wantSize == 0 ? tempReceiveBuffer.length : wantSize;
+        final receiveSize =
+            wantSize == 0 ? tempReceiveBuffer.length : wantSize;
         final spanTempReceiveBuffer =
             tempReceiveBuffer.takeBytes(0, receiveSize);
 
         for (final receivedMemory
             in packetRule.makeReceivedPacket(spanTempReceiveBuffer)) {
           dispatchReceiveData(
-              DeliverRawData.fromSenderAndBuffer(this, receivedMemory));
+            DeliverRawData.fromSenderAndBuffer(this, receivedMemory),
+          );
         }
 
         tempReceiveBuffer.removeRangeStart(receiveSize);

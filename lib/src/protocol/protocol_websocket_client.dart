@@ -2,29 +2,29 @@ import 'package:universal_io/io.dart';
 
 import 'protocol_websocket.dart';
 
-/// WebSocket Client protocol
 class ProtocolWebSocketClient extends ProtocolWebSocket {
-  ProtocolWebSocketClient.fromParam(this.url,
-      {this.autoConnectAfterDisconnect});
+  ProtocolWebSocketClient.fromParam(
+    this.url, {
+    this.autoConnectAfterDisconnect = false,
+  });
 
-  Future _connectTask;
+  Future<void>? _connectTask;
 
   String url = 'ws://127.0.0.1:8080/ws';
 
-  bool autoConnectAfterDisconnect = false;
+  bool autoConnectAfterDisconnect;
 
   bool _isSelfClose = false;
 
   @override
-  Future start() async {
+  Future<void> start() async {
     await super.start();
 
-    // ignore: unawaited_futures
     _startConnect();
   }
 
   @override
-  Future close() async {
+  Future<void> close() async {
     _isSelfClose = true;
 
     await super.close();
@@ -32,8 +32,8 @@ class ProtocolWebSocketClient extends ProtocolWebSocket {
     await _connectTask;
   }
 
-  Future _startConnect() async {
-    Future _connect() async {
+  Future<void> _startConnect() async {
+    Future<void> connect() async {
       _isSelfClose = false;
 
       webSocket = null;
@@ -44,14 +44,12 @@ class ProtocolWebSocketClient extends ProtocolWebSocket {
 
           break;
         } on SocketException {
-          // Wait a minute and then try to reconnect.
-          await Future.delayed(const Duration(seconds: 1));
+          await Future<void>.delayed(const Duration(seconds: 1));
         }
       }
     }
 
-    _connectTask = _connect();
-    return _connectTask;
+    _connectTask = connect();
   }
 
   @override
@@ -59,7 +57,6 @@ class ProtocolWebSocketClient extends ProtocolWebSocket {
     super.onDone();
 
     if (_isSelfClose == false && autoConnectAfterDisconnect) {
-      // ignore: unawaited_futures
       _startConnect();
     }
   }

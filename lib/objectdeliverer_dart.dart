@@ -1,5 +1,3 @@
-library objectdeliverer_dart;
-
 export 'src/connected_data.dart';
 export 'src/deliver_data.dart';
 export 'src/deliverybox/deliverybox_base.dart';

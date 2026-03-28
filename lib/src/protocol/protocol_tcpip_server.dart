@@ -5,24 +5,24 @@ import '../connected_data.dart';
 import 'objectdeliverer_protocol.dart';
 import 'protocol_tcpip_socket.dart';
 
-/// TCP/IP Server protocol
 class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   ProtocolTcpIpServer.fromParam(this.listenPort);
 
   final List<ProtocolTcpIpSocket> _connectedSockets = <ProtocolTcpIpSocket>[];
 
-  ServerSocket _tcpListener;
+  ServerSocket? _tcpListener;
 
   int listenPort;
 
   @override
-  Future start() async {
+  Future<void> start() async {
     _tcpListener = await ServerSocket.bind(InternetAddress.anyIPv4, listenPort)
       ..listen((Socket connectedClientSocket) {
         final clientSocket =
             ProtocolTcpIpSocket.fromConnectedSocket(connectedClientSocket)
               ..disconnected.listen(
-                  (ConnectedData x) => _clientSocketDisconnected(x.target))
+                (ConnectedData x) => _clientSocketDisconnected(x.target),
+              )
               ..receiveData.listen(dispatchReceiveData)
               ..setPacketRule(packetRule.clonePacketRule());
 
@@ -33,11 +33,11 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
   }
 
   @override
-  Future close() async {
-    await _tcpListener.close();
+  Future<void> close() async {
+    await _tcpListener?.close();
     _tcpListener = null;
 
-    final closeTasks = <Future>[];
+    final closeTasks = <Future<void>>[];
 
     for (final clientSocket in _connectedSockets) {
       closeTasks.add(clientSocket.close());
@@ -45,12 +45,12 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
 
     _connectedSockets.clear();
 
-    return Future.wait(closeTasks);
+    await Future.wait(closeTasks);
   }
 
   @override
-  Future send(Uint8List dataBuffer) {
-    final sendTasks = <Future>[];
+  Future<void> send(Uint8List dataBuffer) {
+    final sendTasks = <Future<void>>[];
 
     for (final clientSocket in _connectedSockets) {
       sendTasks.add(clientSocket.send(dataBuffer));
@@ -59,25 +59,21 @@ class ProtocolTcpIpServer extends ObjectDelivererProtocol {
     return Future.wait(sendTasks);
   }
 
-  Future _clientSocketDisconnected(
-      ObjectDelivererProtocol delivererProtocol) async {
-    if (delivererProtocol == null) {
+  Future<void> _clientSocketDisconnected(
+    ObjectDelivererProtocol delivererProtocol,
+  ) async {
+    if (delivererProtocol is! ProtocolTcpIpSocket) {
       return;
     }
 
-    if (delivererProtocol is ProtocolTcpIpSocket == false) {
-      return;
-    }
-
-    final protocolTcpIp = delivererProtocol as ProtocolTcpIpSocket;
-    final foundIndex = _connectedSockets.indexOf(protocolTcpIp);
+    final foundIndex = _connectedSockets.indexOf(delivererProtocol);
 
     if (foundIndex >= 0) {
-      await protocolTcpIp.close();
+      await delivererProtocol.close();
 
       _connectedSockets.removeAt(foundIndex);
 
-      dispatchDisconnected(protocolTcpIp);
+      dispatchDisconnected(delivererProtocol);
     }
   }
 }

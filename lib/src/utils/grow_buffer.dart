@@ -1,14 +1,13 @@
-﻿import 'dart:math';
+import 'dart:math';
 import 'dart:typed_data';
 
-/// Buffer with size adjustment function
 class GrowBuffer {
-  GrowBuffer({int initialSize = 0, int packetSize = 1024}) {
-    _packetSize = packetSize;
+  GrowBuffer({int initialSize = 0, int packetSize = 1024})
+      : _packetSize = packetSize {
     setBufferSize(initialSize);
   }
 
-  int _packetSize;
+  final int _packetSize;
   Uint8List _innerBuffer = Uint8List(0);
 
   int _length = 0;
@@ -47,14 +46,18 @@ class GrowBuffer {
 
     final startOffset = length - addBuffer.length;
     _innerBuffer.setRange(
-        startOffset, startOffset + addBuffer.length, addBuffer);
+      startOffset,
+      startOffset + addBuffer.length,
+      addBuffer,
+    );
   }
 
   void copyFrom(Uint8List fromBuffer, [int myOffset = 0]) {
     _innerBuffer.setRange(
-        myOffset,
-        myOffset + min(fromBuffer.length, length - myOffset).toInt(),
-        fromBuffer);
+      myOffset,
+      myOffset + min(fromBuffer.length, length - myOffset).toInt(),
+      fromBuffer,
+    );
   }
 
   void removeRangeStart(int length) {

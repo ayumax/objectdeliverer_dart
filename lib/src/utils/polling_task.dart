@@ -1,36 +1,36 @@
-﻿import 'package:async/async.dart';
+import 'package:async/async.dart';
 
-/// Polling processing class
 class PollingTask {
   PollingTask.fromAction(Future<bool> Function() action) {
     _isCancel = false;
 
-    _pollingTask =
-        CancelableOperation<void>.fromFuture(run(action), onCancel: _onCancel);
+    _pollingTask = CancelableOperation<void>.fromFuture(
+      run(action),
+      onCancel: _onCancel,
+    );
   }
 
-  CancelableOperation<void> _pollingTask;
+  CancelableOperation<void>? _pollingTask;
   bool _isCancel = false;
 
-  /// stop the polling
-  Future stop() async {
-    if (_pollingTask == null) {
+  Future<void> stop() async {
+    final task = _pollingTask;
+    if (task == null) {
       return;
     }
 
-    await _pollingTask.cancel();
+    await task.cancel();
 
-    await _pollingTask.valueOrCancellation();
+    await task.valueOrCancellation();
   }
 
-  /// Polling process
-  Future run(Future<bool> Function() action) async {
+  Future<void> run(Future<bool> Function() action) async {
     while (_isCancel == false) {
       if (await action() == false) {
         break;
       }
 
-      await Future.delayed(const Duration(milliseconds: 1));
+      await Future<void>.delayed(const Duration(milliseconds: 1));
     }
   }
 

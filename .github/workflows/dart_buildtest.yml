@@ -2,22 +2,22 @@ name: tests
 
 on:
   push:
-    branches: [ devel ]
+    branches: [main, devel]
   pull_request:
-    branches: [ devel ]
+    branches: [main, devel]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
-    container:
-      image:  google/dart:latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Install dependencies
-      run: pub get
-    - name: Run tests
-      run: pub run test
-
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - name: Install dependencies
+        run: dart pub get
+      - name: Analyze
+        run: dart analyze
+      - name: Run tests
+        run: dart test

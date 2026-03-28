@@ -5,42 +5,43 @@ import '../connected_data.dart';
 import 'objectdeliverer_protocol.dart';
 import 'protocol_websocket.dart';
 
-/// WebSocket Server protocol
 class ProtocolWebSocketServer extends ObjectDelivererProtocol {
   ProtocolWebSocketServer.fromParam(this.listenPort, {this.path = 'ws'});
 
   final List<ProtocolWebSocket> _connectedSockets = <ProtocolWebSocket>[];
 
-  HttpServer _httpServer;
+  HttpServer? _httpServer;
 
   int listenPort;
   String path = 'ws';
 
   @override
-  Future start() async {
-    _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, listenPort)
-      ..where((request) => request.uri.path == '/$path')
-          .transform(WebSocketTransformer())
-          .listen((WebSocket connectedClientSocket) {
-        final clientSocket =
-            ProtocolWebSocket.fromConnectedSocket(connectedClientSocket)
-              ..disconnected.listen(
-                  (ConnectedData x) => _clientSocketDisconnected(x.target))
-              ..receiveData.listen(dispatchReceiveData)
-              ..setPacketRule(packetRule.clonePacketRule());
+  Future<void> start() async {
+    _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, listenPort);
+    _httpServer!
+        .where((request) => request.uri.path == '/$path')
+        .transform(WebSocketTransformer())
+        .listen((WebSocket connectedClientSocket) {
+      final clientSocket =
+          ProtocolWebSocket.fromConnectedSocket(connectedClientSocket)
+            ..disconnected.listen(
+              (ConnectedData x) => _clientSocketDisconnected(x.target),
+            )
+            ..receiveData.listen(dispatchReceiveData)
+            ..setPacketRule(packetRule.clonePacketRule());
 
-        _connectedSockets.add(clientSocket);
+      _connectedSockets.add(clientSocket);
 
-        dispatchConnected(clientSocket);
-      });
+      dispatchConnected(clientSocket);
+    });
   }
 
   @override
-  Future close() async {
-    await _httpServer.close();
+  Future<void> close() async {
+    await _httpServer?.close();
     _httpServer = null;
 
-    final closeTasks = <Future>[];
+    final closeTasks = <Future<void>>[];
 
     for (final clientSocket in _connectedSockets) {
       closeTasks.add(clientSocket.close());
@@ -48,12 +49,12 @@ class ProtocolWebSocketServer extends ObjectDelivererProtocol {
 
     _connectedSockets.clear();
 
-    return Future.wait(closeTasks);
+    await Future.wait(closeTasks);
   }
 
   @override
-  Future send(Uint8List dataBuffer) {
-    final sendTasks = <Future>[];
+  Future<void> send(Uint8List dataBuffer) {
+    final sendTasks = <Future<void>>[];
 
     for (final clientSocket in _connectedSockets) {
       sendTasks.add(clientSocket.send(dataBuffer));
@@ -62,25 +63,21 @@ class ProtocolWebSocketServer extends ObjectDelivererProtocol {
     return Future.wait(sendTasks);
   }
 
-  Future _clientSocketDisconnected(
-      ObjectDelivererProtocol delivererProtocol) async {
-    if (delivererProtocol == null) {
+  Future<void> _clientSocketDisconnected(
+    ObjectDelivererProtocol delivererProtocol,
+  ) async {
+    if (delivererProtocol is! ProtocolWebSocket) {
       return;
     }
 
-    if (delivererProtocol is ProtocolWebSocket == false) {
-      return;
-    }
-
-    final protocolWebSocket = delivererProtocol as ProtocolWebSocket;
-    final foundIndex = _connectedSockets.indexOf(protocolWebSocket);
+    final foundIndex = _connectedSockets.indexOf(delivererProtocol);
 
     if (foundIndex >= 0) {
-      await protocolWebSocket.close();
+      await delivererProtocol.close();
 
       _connectedSockets.removeAt(foundIndex);
 
-      dispatchDisconnected(protocolWebSocket);
+      dispatchDisconnected(delivererProtocol);
     }
   }
 }
