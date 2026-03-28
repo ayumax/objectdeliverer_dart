@@ -3,15 +3,14 @@ import 'dart:typed_data';
 
 import 'protocol_ip_socket.dart';
 
-/// UDP Receiver protocol
 class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   ProtocolUdpSocketReceiver.fromParam(this.boundPort);
 
   int boundPort;
-  RawDatagramSocket _udpReceiver;
+  RawDatagramSocket? _udpReceiver;
 
   @override
-  Future start() async {
+  Future<void> start() async {
     _udpReceiver =
         await RawDatagramSocket.bind(InternetAddress.anyIPv4, boundPort)
           ..readEventsEnabled = true
@@ -24,12 +23,8 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   }
 
   @override
-  Future close() async {
-    if (_udpReceiver == null) {
-      return;
-    }
-
-    _udpReceiver.close();
+  Future<void> close() async {
+    _udpReceiver?.close();
 
     await stopReceive();
 
@@ -37,13 +32,12 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   }
 
   @override
-  Future send(Uint8List dataBuffer) async {
-    // no send
-  }
+  Future<void> send(Uint8List dataBuffer) async {}
 
-  Future _onReceived(RawSocketEvent udpEvent) async {
-    if (udpEvent == RawSocketEvent.read) {
-      final datagram = _udpReceiver.receive();
+  Future<void> _onReceived(RawSocketEvent udpEvent) async {
+    final receiver = _udpReceiver;
+    if (udpEvent == RawSocketEvent.read && receiver != null) {
+      final datagram = receiver.receive();
       if (datagram != null) {
         await mutex.protect(() async {
           tempReceiveBuffer.add(datagram.data);
@@ -53,7 +47,7 @@ class ProtocolUdpSocketReceiver extends ProtocolIpSocket {
   }
 
   void _onError(Object er) {
-    _udpReceiver.close();
+    _udpReceiver?.close();
     dispatchDisconnected(this);
   }
 }

@@ -1,15 +1,17 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:objectdeliverer_dart/objectdeliverer_dart.dart';
 import 'package:test/test.dart';
 
-Future<bool> waitCounter(bool Function() checkCondition,
-    [Duration limitTime = const Duration(seconds: 1)]) {
-  final completer = Completer<bool>(); // Completer<T>を作成する。
+Future<bool> waitCounter(
+  bool Function() checkCondition, [
+  Duration limitTime = const Duration(seconds: 1),
+]) {
+  final completer = Completer<bool>();
 
-  Timer onceTimer;
-  Timer periodicTimer;
+  late Timer onceTimer;
+  late Timer periodicTimer;
 
   onceTimer = Timer(limitTime, () {
     completer.complete(false);
@@ -25,10 +27,10 @@ Future<bool> waitCounter(bool Function() checkCondition,
     }
   });
 
-  return completer.future; // Completerの持つFutureオブジェクトを返す。
+  return completer.future;
 }
 
-Future _testUDP(PacketRuleBase packetRule) async {
+Future<void> _testUDP(PacketRuleBase packetRule) async {
   final receiver = ProtocolUdpSocketReceiver.fromParam(50123)
     ..setPacketRule(packetRule.clonePacketRule());
 
@@ -37,8 +39,8 @@ Future _testUDP(PacketRuleBase packetRule) async {
 
   {
     var counter = 2;
-    final clientListner = receiver.connected.listen((x) => counter--);
-    final serverListner = sender.connected.listen((x) => counter--);
+    final clientListener = receiver.connected.listen((x) => counter--);
+    final serverListener = sender.connected.listen((x) => counter--);
     await receiver.start();
 
     await sender.start();
@@ -47,15 +49,15 @@ Future _testUDP(PacketRuleBase packetRule) async {
       fail('fail');
     }
 
-    await clientListner.cancel();
-    await serverListner.cancel();
+    await clientListener.cancel();
+    await serverListener.cancel();
   }
 
   {
     final expected = Uint8List.fromList([1, 2, 3]);
 
     var counter = 100;
-    final serverListner = receiver.receiveData.listen((x) {
+    final serverListener = receiver.receiveData.listen((x) {
       final expected2 = Uint8List.fromList([counter, 2, 3]);
       expect(x.buffer, expected2);
       counter--;
@@ -67,13 +69,16 @@ Future _testUDP(PacketRuleBase packetRule) async {
         await waitCounter(() => counter == i - 1);
       }
 
-      if (await waitCounter(() => counter == 0, const Duration(seconds: 10)) ==
+      if (await waitCounter(
+            () => counter == 0,
+            const Duration(seconds: 10),
+          ) ==
           false) {
         fail('fail');
       }
     }
 
-    await serverListner.cancel();
+    await serverListener.cancel();
   }
 
   await receiver.close();
@@ -87,7 +92,8 @@ void main() {
       await _testUDP(PacketRuleFixedLength.fromParam(3));
       await _testUDP(PacketRuleNodivision());
       await _testUDP(
-          PacketRuleTerminate.fromParam(Uint8List.fromList([0xEE, 0xFF])));
+        PacketRuleTerminate.fromParam(Uint8List.fromList([0xEE, 0xFF])),
+      );
     });
   });
 }

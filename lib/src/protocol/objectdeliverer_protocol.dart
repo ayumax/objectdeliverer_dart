@@ -19,18 +19,18 @@ abstract class ObjectDelivererProtocol {
 
   PacketRuleBase packetRule = PacketRuleNodivision();
 
-  Future start();
+  Future<void> start();
 
-  Future close();
+  Future<void> close();
 
-  Future send(Uint8List dataBuffer);
+  Future<void> send(Uint8List dataBuffer);
 
   void setPacketRule(PacketRuleBase packetRule) {
     this.packetRule = packetRule;
     packetRule.initialize();
   }
 
-  Future dispose() async {
+  Future<void> dispose() async {
     if (!_disposedValue) {
       await _connected.close();
       await _disconnected.close();

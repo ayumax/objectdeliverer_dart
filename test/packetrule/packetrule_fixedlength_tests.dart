@@ -15,6 +15,19 @@ void main() {
       await expectLater(actual, expected);
     });
 
+    test('When the transmit buffer size is greater than the fixed size',
+        () async {
+      final packetRule = PacketRuleFixedLength.fromParam(8)..initialize();
+
+      final input = Uint8List.fromList(List.generate(10, (index) => index));
+      final actual = packetRule.makeSendPacket(input);
+
+      await expectLater(actual.length, 8);
+      for (var i = 0; i < 8; i++) {
+        await expectLater(actual[i], i);
+      }
+    });
+
     test('When the transmit buffer size is less than the fixed size', () async {
       final packetRule = PacketRuleFixedLength.fromParam(20)..initialize();
 

@@ -1,4 +1,4 @@
-﻿import 'package:objectdeliverer_dart/objectdeliverer_dart.dart';
+import 'package:objectdeliverer_dart/objectdeliverer_dart.dart';
 import 'package:test/test.dart';
 
 class TestObject extends IJsonSerializable {
@@ -13,15 +13,15 @@ class TestObject extends IJsonSerializable {
     });
   }
 
-  int intProperty;
-  String stringProperty;
-  double doubleProperty;
+  late int intProperty;
+  late String stringProperty;
+  late double doubleProperty;
 
   @override
   Map<String, dynamic> toJson() => {
         'intProperty': intProperty,
         'stringProperty': stringProperty,
-        'doubleProperty': doubleProperty
+        'doubleProperty': doubleProperty,
       };
 }
 
@@ -38,7 +38,7 @@ void main() {
       final buffer = deliveryBox.makeSendBuffer(testObj);
       final deserializedObj = deliveryBox.bufferToMessage(buffer);
 
-      await expectLater(deserializedObj.intProperty, 10);
+      await expectLater(deserializedObj!.intProperty, 10);
       await expectLater(deserializedObj.stringProperty, 'abcdEFG');
       await expectLater(deserializedObj.doubleProperty, 3.14);
     });

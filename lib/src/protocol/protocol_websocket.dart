@@ -6,39 +6,48 @@ import 'protocol_ip_socket.dart';
 class ProtocolWebSocket extends ProtocolIpSocket {
   ProtocolWebSocket();
   ProtocolWebSocket.fromConnectedSocket(this.webSocket) {
-    webSocket.listen(_onReceived,
-        onError: _onError, onDone: onDone, cancelOnError: true);
+    webSocket!.listen(
+      _onReceived,
+      onError: _onError,
+      onDone: onDone,
+      cancelOnError: true,
+    );
 
     dispatchConnected(this);
 
     startReceive();
   }
 
-  Future startConnect(String url) async {
+  Future<void> startConnect(String url) async {
     webSocket = await WebSocket.connect(url)
-      ..listen(_onReceived,
-          onError: _onError, onDone: onDone, cancelOnError: true);
+      ..listen(
+        _onReceived,
+        onError: _onError,
+        onDone: onDone,
+        cancelOnError: true,
+      );
 
     dispatchConnected(this);
 
     startReceive();
   }
 
-  WebSocket webSocket;
+  WebSocket? webSocket;
   bool _selfClose = false;
 
   @override
-  Future start() async {}
+  Future<void> start() async {}
 
   @override
-  Future close() async {
-    if (webSocket == null) {
+  Future<void> close() async {
+    final ws = webSocket;
+    if (ws == null) {
       return;
     }
 
     _selfClose = true;
 
-    await webSocket.close();
+    await ws.close();
 
     await stopReceive();
 
@@ -46,15 +55,15 @@ class ProtocolWebSocket extends ProtocolIpSocket {
   }
 
   @override
-  Future send(Uint8List dataBuffer) async {
-    if (webSocket == null) {
+  Future<void> send(Uint8List dataBuffer) async {
+    final ws = webSocket;
+    if (ws == null) {
       return;
     }
 
     final sendBuffer = packetRule.makeSendPacket(dataBuffer);
 
-    // ignore: unnecessary_cast
-    webSocket.add(sendBuffer as List<int>);
+    ws.add(sendBuffer);
   }
 
   void _onReceived(dynamic receivedBuffer) async {
@@ -68,8 +77,9 @@ class ProtocolWebSocket extends ProtocolIpSocket {
   }
 
   void onDone() async {
-    if (_selfClose == false && webSocket != null) {
-      await webSocket.close();
+    final ws = webSocket;
+    if (_selfClose == false && ws != null) {
+      await ws.close();
 
       await stopReceive();
 

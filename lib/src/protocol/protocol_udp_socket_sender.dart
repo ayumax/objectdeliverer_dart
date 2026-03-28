@@ -3,10 +3,11 @@ import 'dart:typed_data';
 
 import 'objectdeliverer_protocol.dart';
 
-/// /// UDP Sender protocol
 class ProtocolUdpSocketSender extends ObjectDelivererProtocol {
   ProtocolUdpSocketSender.fromParam(
-      String destinationIpAddress, this.destinationPort) {
+    String destinationIpAddress,
+    this.destinationPort,
+  ) {
     this.destinationIpAddress = destinationIpAddress;
   }
 
@@ -22,34 +23,34 @@ class ProtocolUdpSocketSender extends ObjectDelivererProtocol {
 
   int destinationPort = 0;
 
-  RawDatagramSocket _udpSender;
+  RawDatagramSocket? _udpSender;
 
   @override
-  Future start() async {
+  Future<void> start() async {
     _udpSender = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
 
     dispatchConnected(this);
   }
 
   @override
-  Future close() async {
-    if (_udpSender == null) {
-      return;
-    }
-
-    _udpSender.close();
+  Future<void> close() async {
+    _udpSender?.close();
 
     _udpSender = null;
   }
 
   @override
-  Future send(Uint8List dataBuffer) async {
-    if (_udpSender == null) {
+  Future<void> send(Uint8List dataBuffer) async {
+    final sender = _udpSender;
+    if (sender == null) {
       return;
     }
 
     final sendBuffer = packetRule.makeSendPacket(dataBuffer);
-    _udpSender.send(
-        sendBuffer, InternetAddress(destinationIpAddress), destinationPort);
+    sender.send(
+      sendBuffer,
+      InternetAddress(destinationIpAddress),
+      destinationPort,
+    );
   }
 }

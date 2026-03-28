@@ -1,5 +1,3 @@
-library objectdeliverer_dart;
-
 export 'src/connected_data.dart';
 export 'src/deliver_data.dart';
 export 'src/deliverybox/deliverybox_base.dart';
@@ -12,6 +10,9 @@ export 'src/packetrule/packetrule_nodivision.dart';
 export 'src/packetrule/packetrule_sizebody.dart';
 export 'src/packetrule/packetrule_terminate.dart';
 export 'src/protocol/objectdeliverer_protocol.dart';
+export 'src/protocol/protocol_log_reader.dart';
+export 'src/protocol/protocol_log_writer.dart';
+export 'src/protocol/protocol_reflection.dart';
 export 'src/protocol/protocol_tcpip_client.dart';
 export 'src/protocol/protocol_tcpip_server.dart';
 export 'src/protocol/protocol_udp_socket_receiver.dart';
